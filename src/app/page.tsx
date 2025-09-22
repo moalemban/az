@@ -42,6 +42,7 @@ import TextToSpeech from '@/components/features/text-to-speech';
 import Game2048 from '@/components/features/game-2048';
 import LotteryTool from '@/components/features/lottery-tool';
 import EscapeFromTheBill from '@/components/features/escape-from-the-bill';
+import InvoiceGenerator from '@/components/features/invoice-generator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ScrollToTop from '@/components/layout/scroll-to-top';
 import type { LivePrice, PriceData } from '@/lib/types';
@@ -54,6 +55,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import PWAInstallPrompt from '@/components/layout/pwa-install-prompt';
 import LinkShortener from '@/components/features/link-shortener';
+import SocialPostGenerator from '@/components/features/social-post-generator';
 
 const OthelloIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-8 w-8">
@@ -98,7 +100,7 @@ const toolCategories = [
        { id: 'text-summarizer', title: 'خلاصه‌ساز هوشمند', icon: <BookText className="h-8 w-8 text-cyan-400" />, component: <TextSummarizer /> },
        { id: 'legal-financial-chatbot', title: 'چت‌بات حقوقی و مالی', icon: <Bot className="h-8 w-8 text-blue-400" />, component: <LegalFinancialChatbot /> },
        { id: 'text-to-speech', title: 'نوشتار به گفتار', icon: <BookText className="h-8 w-8 text-fuchsia-400" />, component: <TextToSpeech /> },
-       { id: 'social-post-generator', title: 'ربات تولید پست', icon: <RectangleEllipsis className="h-8 w-8 text-rose-400" />, isWip: true },
+       { id: 'social-post-generator', title: 'ربات تولید پست', icon: <RectangleEllipsis className="h-8 w-8 text-rose-400" />, component: <SocialPostGenerator /> },
        { id: 'book-reader', title: 'کتابخوان آنلاین (ترجمه)', icon: <BookText className="h-8 w-8 text-lime-400" />, isWip: true },
        { id: 'pdf-word-converter', title: 'PDF ↔ Word (و بالعکس)', icon: <RectangleEllipsis className="h-8 w-8 text-blue-400" />, isWip: true },
        { id: 'pdf-image-converter', title: 'PDF ↔ عکس (و برعکس)', icon: <RectangleEllipsis className="h-8 w-8 text-green-400" />, isWip: true },
@@ -139,7 +141,7 @@ const toolCategories = [
       { id: 'deposit-calculator', title: 'سود سپرده', icon: <PiggyBank className="h-8 w-8 text-emerald-400" />, component: <DepositCalculator /> },
       { id: 'savings-calculator', title: 'محاسبه‌گر پس‌انداز', icon: <TrendingUp className="h-8 w-8 text-lime-400" />, component: <SavingsCalculator /> },
       { id: 'percentage-calculator', title: 'محاسبه درصد', icon: <Percent className="h-8 w-8 text-teal-400" />, component: <PercentageCalculator /> },
-      { id: 'invoice-generator', title: 'مولد فاکتور رسمی', icon: <ReceiptText className="h-8 w-8 text-indigo-400" />, isWip: true },
+      { id: 'invoice-generator', title: 'مولد فاکتور رسمی', icon: <ReceiptText className="h-8 w-8 text-indigo-400" />, component: <InvoiceGenerator /> },
     ]
   },
   {

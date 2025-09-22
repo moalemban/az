@@ -39,6 +39,7 @@ import ConnectFour from '@/components/features/connect-four';
 import SimonSays from '@/components/features/simon-says';
 import OthelloGame from '@/components/features/othello-game';
 import TextToSpeech from '@/components/features/text-to-speech';
+import Game2048 from '@/components/features/game-2048';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ScrollToTop from '@/components/layout/scroll-to-top';
 import type { LivePrice, PriceData } from '@/lib/types';
@@ -167,7 +168,7 @@ const toolCategories = [
       { id: 'pinball', title: 'Pinball Retro-Fusion', icon: <ArrowDownRight className="h-8 w-8 text-pink-500" />, isWip: true },
       { id: 'checkers', title: 'Checkers Royal', icon: <Square className="h-8 w-8 text-black" />, isWip: true },
       { id: 'word-hunt', title: 'Word Hunt Blitz', icon: <Search className="h-8 w-8 text-orange-500" />, isWip: true },
-      { id: '2048', title: 'بازی 2048', icon: <Hash className="h-8 w-8 text-indigo-400" />, isWip: true },
+      { id: '2048', title: 'بازی 2048', icon: <Hash className="h-8 w-8 text-indigo-400" />, component: <Game2048 />, mode: 'تک نفره' },
       { id: 'snake', title: 'مار نئونی', icon: <SnakeIcon />, isWip: true },
       { id: 'chess', title: 'شطرنج', icon: <Crown className="h-8 w-8 text-yellow-500" />, isWip: true },
       { id: 'tetris', title: 'خانه سازی (Tetris)', icon: <Blocks className="h-8 w-8 text-cyan-400" />, isWip: true },
@@ -178,7 +179,7 @@ const toolCategories = [
     title: 'ابزارهای کاربردی',
     icon: <User className="h-6 w-6 text-primary-foreground" />,
     tools: [
-      { id: 'sheba-converter', title: 'ابزار شبا/حساب', icon: <ShieldCheck className="h-8 w-8 text-green-500" />, isWip: true },
+      { id: 'sheba-converter', title: 'ابزار شبا/حساب', icon: <ShieldCheck className="h-8 w-8 text-green-500" />, component: <ShebaConverter /> },
       { id: 'national-id-validator', title: 'بررسی صحت و شهر شماره ملی', icon: <Fingerprint className="h-8 w-8 text-teal-400" />, component: <NationalIdValidator /> },
       { id: 'link-shortener', title: 'کوتاه کننده لینک', icon: <LinkIcon className="h-8 w-8 text-sky-400" />, component: <LinkShortener />, isWip: true },
       { id: 'vehicle-plate-identifier', title: 'هوشمند پلاک', icon: <RectangleEllipsis className="h-8 w-8 text-indigo-400" />, component: <VehiclePlateIdentifier /> },
@@ -465,6 +466,7 @@ export default async function Home() {
 }
 
     
+
 
 
 

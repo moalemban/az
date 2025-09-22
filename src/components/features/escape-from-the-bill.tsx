@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Lightbulb, Refrigerator, Tv, Wind, Heater, Fan, Redo, Trophy, Info, LightbulbOff } from 'lucide-react';
@@ -64,9 +64,9 @@ export default function EscapeFromTheBill() {
 
     const consumptionValues: Record<ConsumptionLevel, number> = { high: 3, medium: 2, essential: 1 };
     
-    const totalConsumption = useMemo(() => appliances.reduce((acc, app) => acc + (app.isOn ? consumptionValues[app.consumption] : 0), 0), [appliances]);
-    const maxConsumption = useMemo(() => initialAppliances.reduce((acc, app) => acc + consumptionValues[app.consumption], 0), []);
-    const targetConsumption = useMemo(() => initialAppliances.filter(a => a.consumption === 'essential').reduce((acc, app) => acc + consumptionValues[app.consumption], 0), []);
+    const totalConsumption = useMemo(() => appliances.reduce((acc, app) => acc + (app.isOn ? consumptionValues[app.consumption] : 0), 0), [appliances, consumptionValues]);
+    const maxConsumption = useMemo(() => initialAppliances.reduce((acc, app) => acc + consumptionValues[app.consumption], 0), [consumptionValues]);
+    const targetConsumption = useMemo(() => initialAppliances.filter(a => a.consumption === 'essential').reduce((acc, app) => acc + consumptionValues[app.consumption], 0), [consumptionValues]);
 
     const startGame = () => {
         setAppliances(initialAppliances.map(a => ({...a, isOn: true})));
@@ -103,7 +103,7 @@ export default function EscapeFromTheBill() {
             toast({ title: 'زمان تمام شد!', description: 'متاسفانه قبض برق صادر شد!', variant: 'destructive' });
         }
         return () => { if (timerRef.current) clearInterval(timerRef.current); };
-    }, [gameState, timeLeft]);
+    }, [gameState, timeLeft, toast]);
     
     useEffect(() => {
         if (gameState === 'playing' && totalConsumption <= targetConsumption) {
@@ -111,7 +111,7 @@ export default function EscapeFromTheBill() {
              setGameState('won');
              toast({ title: 'تبریک!', description: 'شما موفق شدید از قبض برق فرار کنید!', className: 'bg-green-500/20 text-green-600'});
         }
-    }, [totalConsumption, targetConsumption, gameState]);
+    }, [totalConsumption, targetConsumption, gameState, toast]);
     
     const locations = useMemo(() => [...new Set(initialAppliances.map(a => a.location))], []);
 

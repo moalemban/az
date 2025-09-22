@@ -317,7 +317,6 @@ export default async function Home() {
                                 {React.cloneElement(tool.icon, { className: "h-7 w-7" })}
                                 {tool.title}
                               </div>
-                               <ModeBadge mode={typedTool.mode} />
                             </CardTitle>
                           </CardHeader>
                           {typedTool.component}
@@ -471,6 +470,7 @@ export default async function Home() {
 }
 
     
+
 
 
 

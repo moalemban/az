@@ -40,12 +40,13 @@ import SimonSays from '@/components/features/simon-says';
 import OthelloGame from '@/components/features/othello-game';
 import TextToSpeech from '@/components/features/text-to-speech';
 import Game2048 from '@/components/features/game-2048';
+import LotteryTool from '@/components/features/lottery-tool';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ScrollToTop from '@/components/layout/scroll-to-top';
 import type { LivePrice, PriceData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Sword, Brain, ArrowLeft, BrainCircuit, BookText, FlaskConical, Scale, Landmark, CalendarDays, Repeat, SpellCheck, Binary, CalendarClock, Gift, Clock, Hourglass, Wallet, Bitcoin, Banknote, PiggyBank, TrendingUp, Percent, HeartPulse, Dumbbell, User, ShieldCheck, Fingerprint, RectangleEllipsis, Dices, KeyRound, QrCode, ScanLine, LocateFixed, Image, Monitor, FileText, Map, Info, HeartHandshake, Globe, Wrench, ArrowUp, ArrowDown, RefreshCw, Timer, CandlestickChart, ExternalLink, Construction, Calculator, Gamepad2, Puzzle, Bot, Mailbox, ReceiptText, CalendarCheck, PenLine, MemoryStick, Hash, Link as LinkIcon, Users, Ghost, CircleDot, Castle, Rocket, Target, Ship, ArrowDownRight, Square, Search, Shield, MessageSquareHeart, Bomb, Crown } from 'lucide-react';
+import { Sword, Brain, ArrowLeft, BrainCircuit, BookText, FlaskConical, Scale, Landmark, CalendarDays, Repeat, SpellCheck, Binary, CalendarClock, Gift, Clock, Hourglass, Wallet, Bitcoin, Banknote, PiggyBank, TrendingUp, Percent, HeartPulse, Dumbbell, User, ShieldCheck, Fingerprint, RectangleEllipsis, Dices, KeyRound, QrCode, ScanLine, LocateFixed, Image, Monitor, FileText, Map, Info, HeartHandshake, Globe, Wrench, ArrowUp, ArrowDown, RefreshCw, Timer, CandlestickChart, ExternalLink, Construction, Calculator, Gamepad2, Puzzle, Bot, Mailbox, ReceiptText, CalendarCheck, PenLine, MemoryStick, Hash, Link as LinkIcon, Users, Ghost, CircleDot, Castle, Rocket, Target, Ship, ArrowDownRight, Square, Search, Shield, MessageSquareHeart, Bomb, Crown, Palette } from 'lucide-react';
 import ImageNext from 'next/image';
 import AdvancedLivePrices from '@/components/features/advanced-live-prices';
 import { Badge } from '@/components/ui/badge';
@@ -114,8 +115,8 @@ const toolCategories = [
       { id: 'number-to-words', title: 'عدد به حروف', icon: <SpellCheck className="h-8 w-8 text-amber-400" />, component: <NumberToWordsConverter /> },
       { id: 'number-system', title: 'تبدیل ارقام', icon: <Binary className="h-8 w-8 text-sky-400" />, component: <NumberSystemConverter /> },
       { id: 'binary-converter', title: 'متن و باینری', icon: <Binary className="h-8 w-8 text-cyan-400" />, component: <BinaryConverter /> },
-      { id: 'color-converter', title: 'مبدل رنگ (HEX, RGB, HSL)', icon: <RectangleEllipsis className="h-8 w-8 text-rose-400" />, isWip: true },
-      { id: 'base64-converter', title: 'Base64 (متن/فایل)', icon: <RectangleEllipsis className="h-8 w-8 text-violet-400" />, isWip: true },
+      { id: 'color-converter', title: 'مبدل رنگ (HEX, RGB, HSL)', icon: <Palette className="h-8 w-8 text-rose-400" />, isWip: true },
+      { id: 'base64-converter', title: 'Base64 (متن/فایل)', icon: <Hash className="h-8 w-8 text-violet-400" />, isWip: true },
     ]
   },
   {
@@ -161,7 +162,6 @@ const toolCategories = [
       { id: 'simon-says', title: 'بازی سایمون', icon: <BrainCircuit className="h-8 w-8 text-purple-500" />, component: <SimonSays />, mode: 'تک نفره' },
       { id: 'othello-game', title: 'بازی اتللو', icon: <OthelloIcon />, component: <OthelloGame />, mode: 'دو نفره' },
       { id: '2048', title: 'بازی 2048', icon: <RectangleEllipsis className="h-8 w-8 text-indigo-400" />, component: <Game2048 />, mode: 'تک نفره' },
-      { id: 'lottery-tool', title: 'ابزار قرعه کشی', icon: <RectangleEllipsis className="h-8 w-8 text-teal-400" />, isWip: true },
       { id: 'escape-the-bill', title: 'فرار از قبض برق', icon: <RectangleEllipsis className="h-8 w-8 text-yellow-500" />, isWip: true },
       { id: 'minesweeper-3d', title: 'Minesweeper Extreme 3D', icon: <Bomb className="h-8 w-8 text-gray-400" />, isWip: true },
       { id: 'archaeology-game', title: 'بازی زیرخاکی', icon: <Ghost className="h-8 w-8 text-yellow-400" />, isWip: true },
@@ -189,6 +189,7 @@ const toolCategories = [
       { id: 'vehicle-plate-identifier', title: 'هوشمند پلاک', icon: <RectangleEllipsis className="h-8 w-8 text-indigo-400" />, component: <VehiclePlateIdentifier /> },
       { id: 'random-number', title: 'عدد تصادفی', icon: <Dices className="h-8 w-8 text-orange-400" />, component: <RandomNumberGenerator /> },
       { id: 'password-generator', title: 'تولید رمز عبور', icon: <KeyRound className="h-8 w-8 text-violet-400" />, component: <PasswordGenerator /> },
+      { id: 'lottery-tool', title: 'ابزار قرعه کشی', icon: <Dices className="h-8 w-8 text-teal-400" />, component: <LotteryTool /> },
       { id: 'qr-code-generator', title: 'QR Code ساز', icon: <QrCode className="h-8 w-8 text-emerald-400" />, component: <QrCodeGenerator /> },
       { id: 'qr-code-reader', title: 'QR Code خوان', icon: <ScanLine className="h-8 w-8 text-blue-400" />, component: <QrCodeReader /> },
       { id: 'image-optimizer', title: 'کاهش حجم تصویر', icon: <Image className="h-8 w-8 text-orange-400" />, component: <ImageOptimizer /> },
@@ -469,6 +470,7 @@ export default async function Home() {
 }
 
     
+
 
 
 

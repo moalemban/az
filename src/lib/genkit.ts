@@ -1,11 +1,6 @@
 import { googleAI } from '@genkit-ai/googleai';
 import { firebase } from '@genkit-ai/firebase';
-import {
-  defineFlow,
-  definePrompt,
-  configureGenkit,
-  genkit,
-} from '@genkit-ai/ai';
+import { genkit } from '@genkit-ai/ai';
 
 const AiInstance = genkit({
   plugins: [

@@ -54,7 +54,7 @@ const prompt = ai.definePrompt({
     4.  Incorporate relevant and tasteful emojis to enhance engagement.
     {{/if}}
     {{#if includeHashtags}}
-    5.  Suggest 3 to 5 relevant and popular Persian hashtags. Provide them as a list in the 'hashtags' field of the output, without the '#' symbol.
+    5.  Suggest 3 to 5 relevant Persian hashtags. Provide them as a list in the 'hashtags' field of the output, without the '#' symbol.
     {{/if}}
 
     - For **Instagram**, focus on a strong opening, use paragraphs, and ask a question at the end to encourage comments.

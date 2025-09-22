@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils';
 import type { LivePrice, PriceData, PriceDataItem } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { fetchPrices as fetchPricesFlow } from '@/ai/flows/fetch-prices-flow';
 
 const PriceChangeIndicator = ({ change }: { change: string | null }) => {
   if (!change || change === "0" || change === "۰") {
@@ -72,7 +71,7 @@ type AdvancedLivePricesProps = {
 
 export default function AdvancedLivePrices({ initialData }: AdvancedLivePricesProps) {
   const [data, setData] = useState(initialData);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!initialData || Object.keys(initialData).length === 0);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   
   const [isCooldown, setIsCooldown] = useState(false);
@@ -82,10 +81,15 @@ export default function AdvancedLivePrices({ initialData }: AdvancedLivePricesPr
   const COOLDOWN_SECONDS = 30;
 
   useEffect(() => {
-    setLastUpdated(new Date());
+    if(initialData && Object.keys(initialData).length > 0) {
+        setLastUpdated(new Date());
+    } else {
+        // fetchPrices(); // This would be the ideal case, but flows are disabled
+    }
   }, [initialData]);
 
   const prices: LivePrice[] = useMemo(() => {
+    if (!data || Object.keys(data).length === 0) return [];
     return Object.entries(data)
       .map(([key, value]) => {
         if (key === 'cryptos' || !value) return null;
@@ -111,10 +115,9 @@ export default function AdvancedLivePrices({ initialData }: AdvancedLivePricesPr
     setCooldownTime(COOLDOWN_SECONDS);
 
     try {
-      const fetchedData = await fetchPricesFlow();
-      if (!fetchedData) throw new Error("No data returned from flow");
-      setData(fetchedData);
-      setLastUpdated(new Date());
+      // Since flows are disabled, we cannot fetch prices.
+      // This is a placeholder for when the functionality is restored.
+      console.error("Price fetching is temporarily disabled.");
     } catch (error) {
       console.error("Failed to fetch prices:", error);
     } finally {
@@ -149,7 +152,7 @@ export default function AdvancedLivePrices({ initialData }: AdvancedLivePricesPr
               قیمت‌های لحظه‌ای
             </h2>
             <div className="flex items-center space-x-2 space-x-reverse">
-                <Button variant="ghost" size="sm" onClick={fetchPrices} disabled={loading || isCooldown} className="text-muted-foreground w-28">
+                <Button variant="ghost" size="sm" onClick={fetchPrices} disabled={true} className="text-muted-foreground w-28">
                     {loading ? <RefreshCw className={cn("h-5 w-5 animate-spin")} /> 
                             : isCooldown ? <><Timer className="h-5 w-5 ml-2" /> {cooldownTime} ثانیه</>
                             : <><RefreshCw className="h-5 w-5 ml-2" /> به‌روزرسانی</>
@@ -171,7 +174,17 @@ export default function AdvancedLivePrices({ initialData }: AdvancedLivePricesPr
             </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
-            {prices.map((item) => item ? <PriceCard key={item.id} item={item} /> : null)}
+            {loading ? (
+                 Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-28 rounded-2xl"/>
+                 ))
+            ) : prices.length > 0 ? (
+                prices.map((item) => item ? <PriceCard key={item.id} item={item} /> : null)
+            ): (
+                 <p className='col-span-full text-center text-muted-foreground py-8'>
+                    سرویس قیمت‌های لحظه‌ای در حال حاضر در دسترس نیست.
+                 </p>
+            )}
         </div>
     </div>
   );

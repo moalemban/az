@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label';
 import { numToWords } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '../ui/separator';
-import { fetchPrices } from '@/ai/flows/fetch-prices-flow';
 
 export default function CurrencyConverter() {
   const [fromCurrency, setFromCurrency] = useState('USD');
@@ -23,13 +22,8 @@ export default function CurrencyConverter() {
   useEffect(() => {
     async function getLiveRates() {
       try {
-        const prices = await fetchPrices();
-        if (prices.Dollar?.price) {
-          const dollarPrice = parseFloat(prices.Dollar.price);
-          if (!isNaN(dollarPrice)) {
-            setLiveRates(prev => ({ ...prev, 'USD-IRR': dollarPrice }));
-          }
-        }
+        // AI Flow is disabled, using default rate.
+        console.log("Currency rates are using default mock data as AI flows are disabled.");
       } catch (error) {
         console.error("Could not fetch live dollar price:", error);
         // It will use the default mock rate

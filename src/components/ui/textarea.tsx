@@ -5,7 +5,10 @@ import TextareaAutosize from 'react-textarea-autosize';
 
 import { cn } from "@/lib/utils"
 
-export type TextareaProps = React.ComponentProps<typeof TextareaAutosize>;
+export interface TextareaProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+    minRows?: number;
+}
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, ...props }, ref) => {

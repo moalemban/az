@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils';
 import type { CryptoPrice } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { fetchCryptoPrices } from '@/ai/flows/fetch-crypto-flow';
 import {
   Table,
   TableBody,
@@ -59,11 +58,8 @@ export default function CryptoConverter() {
     setCooldownTime(COOLDOWN_SECONDS);
 
     try {
-      const cryptoData = await fetchCryptoPrices();
-      if (!cryptoData?.cryptos) throw new Error("No crypto data returned from flow");
-      
-      setPrices(cryptoData.cryptos);
-      setLastUpdated(new Date());
+       console.error("Crypto price fetching is temporarily disabled.");
+       setPrices([]);
     } catch (error) {
       console.error("Failed to fetch crypto prices:", error);
       setPrices([]);
@@ -89,6 +85,7 @@ export default function CryptoConverter() {
         clearInterval(cooldownIntervalRef.current);
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const PriceBadge = ({ crypto }: { crypto: CryptoPrice }) => {
@@ -111,7 +108,7 @@ export default function CryptoConverter() {
     <div id="crypto-prices" className="p-0 md:p-0">
         <div className="flex flex-wrap items-center justify-between gap-y-2 mb-4 px-4 md:px-0">
             <div className="flex items-center space-x-2 space-x-reverse">
-                <Button variant="ghost" size="sm" onClick={fetchPrices} disabled={loading || isCooldown} className="text-muted-foreground w-28">
+                <Button variant="ghost" size="sm" onClick={fetchPrices} disabled={true} className="text-muted-foreground w-28">
                     {loading ? <RefreshCw className={cn("h-5 w-5 animate-spin")} /> 
                             : isCooldown ? <><Timer className="h-5 w-5 ml-2" /> {cooldownTime} ثانیه</>
                             : <><RefreshCw className="h-5 w-5 ml-2" /> به‌روزرسانی</>
@@ -153,7 +150,7 @@ export default function CryptoConverter() {
                                 <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                             </TableRow>
                         ))
-                    ) : (
+                    ) : prices.length > 0 ? (
                         prices.map((crypto, index) => (
                             <TableRow key={`${crypto.symbol}-${index}`}>
                                 <TableCell className="font-mono text-muted-foreground">{index + 1}</TableCell>
@@ -178,6 +175,12 @@ export default function CryptoConverter() {
                                 </TableCell>
                             </TableRow>
                         ))
+                    ) : (
+                        <TableRow>
+                            <TableCell colSpan={4} className="text-center text-muted-foreground h-24">
+                                سرویس قیمت ارزهای دیجیتال در حال حاضر در دسترس نیست.
+                            </TableCell>
+                        </TableRow>
                     )}
                 </TableBody>
             </Table>
@@ -189,7 +192,7 @@ export default function CryptoConverter() {
                 Array.from({ length: 5 }).map((_, i) => (
                     <Card key={i}><CardContent className='p-4'><Skeleton className="h-20 w-full" /></CardContent></Card>
                 ))
-            ) : (
+            ) : prices.length > 0 ? (
                 prices.map((crypto, index) => (
                     <Card key={`${crypto.symbol}-mob-${index}`} className="glass-effect">
                         <CardContent className="p-3">
@@ -218,6 +221,10 @@ export default function CryptoConverter() {
                         </CardContent>
                     </Card>
                 ))
+            ) : (
+                <div className="text-center text-muted-foreground py-8">
+                     <p>سرویس قیمت ارزهای دیجیتال در حال حاضر در دسترس نیست.</p>
+                </div>
             )}
         </div>
     </div>

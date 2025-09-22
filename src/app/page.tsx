@@ -1,63 +1,75 @@
+
+"use client"
 import React from 'react';
+import dynamic from 'next/dynamic';
 import Header from '@/components/layout/header';
-import UnitConverter from '@/components/features/unit-converter';
-import CurrencyConverter from '@/components/features/currency-converter';
-import DateConverter from '@/components/features/date-converter';
-import CryptoConverter from '@/components/features/crypto-converter';
-import AgeCalculator from '@/components/features/age-calculator';
-import BmiCalculator from '@/components/features/bmi-calculator';
-import PercentageCalculator from '@/components/features/percentage-calculator';
-import LoanCalculator from '@/components/features/loan-calculator';
-import Stopwatch from '@/components/features/stopwatch';
-import CountdownTimer from '@/components/features/countdown-timer';
-import DepositCalculator from '@/components/features/deposit-calculator';
-import NumberToWordsConverter from '@/components/features/number-to-words-converter';
-import NumberSystemConverter from '@/components/features/number-system-converter';
-import PasswordGenerator from '@/components/features/password-generator';
-import RandomNumberGenerator from '@/components/features/random-number-generator';
-import BinaryConverter from '@/components/features/binary-converter';
-import DistanceCalculator from '@/components/features/distance-calculator';
-import VehiclePlateIdentifier from '@/components/features/vehicle-plate-identifier';
-import TextAnalyzer from '@/components/features/text-analyzer';
-import ImageOptimizer from '@/components/features/image-optimizer';
-import TextSummarizer from '@/components/features/text-summarizer';
-import RialTomanConverter from '@/components/features/rial-toman-converter';
-import SavingsCalculator from '@/components/features/savings-calculator';
-import NationalIdValidator from '@/components/features/national-id-validator';
-import WorkoutTimer from '@/components/features/workout-timer';
-import ShebaConverter from '@/components/features/sheba-converter';
-import QrCodeGenerator from '@/components/features/qr-code-generator';
-import QrCodeReader from '@/components/features/qr-code-reader';
-import TicTacToe from '@/components/features/tic-tac-toe';
-import RockPaperScissors from '@/components/features/rock-paper-scissors';
-import Hangman from '@/components/features/hangman';
-import LegalFinancialChatbot from '@/components/features/legal-financial-chatbot';
-import SignatureGenerator from '@/components/features/signature-generator';
-import MemoryGame from '@/components/features/memory-game';
-import GuessTheNumber from '@/components/features/guess-the-number';
-import ConnectFour from '@/components/features/connect-four';
-import SimonSays from '@/components/features/simon-says';
-import OthelloGame from '@/components/features/othello-game';
-import TextToSpeech from '@/components/features/text-to-speech';
-import Game2048 from '@/components/features/game-2048';
-import LotteryTool from '@/components/features/lottery-tool';
-import EscapeFromTheBill from '@/components/features/escape-from-the-bill';
-import InvoiceGenerator from '@/components/features/invoice-generator';
-import ColorConverter from '@/components/features/color-converter';
-import Base64Converter from '@/components/features/base64-converter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ScrollToTop from '@/components/layout/scroll-to-top';
 import type { LivePrice, PriceData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Sword, Brain, ArrowLeft, BrainCircuit, BookText, FlaskConical, Scale, Landmark, CalendarDays, Repeat, SpellCheck, Binary, CalendarClock, Gift, Clock, Hourglass, Wallet, Bitcoin, Banknote, PiggyBank, TrendingUp, Percent, HeartPulse, Dumbbell, User, ShieldCheck, Fingerprint, RectangleEllipsis, Dices, KeyRound, QrCode, ScanLine, LocateFixed, Image, Monitor, FileText, Map, Info, HeartHandshake, Globe, Wrench, ArrowUp, ArrowDown, RefreshCw, Timer, CandlestickChart, ExternalLink, Construction, Calculator, Gamepad2, Puzzle, Bot, Mailbox, ReceiptText, CalendarCheck, PenLine, MemoryStick, Hash, Link as LinkIcon, Users, Ghost, CircleDot, Castle, Rocket, Target, Ship, ArrowDownRight, Square, Search, Shield, MessageSquareHeart, Bomb, Crown, Palette } from 'lucide-react';
+import { Sword, Brain, ArrowLeft, BrainCircuit, BookText, FlaskConical, Scale, Landmark, CalendarDays, Repeat, SpellCheck, Binary, CalendarClock, Gift, Clock, Hourglass, Wallet, Bitcoin, Banknote, PiggyBank, TrendingUp, Percent, HeartPulse, Dumbbell, User, ShieldCheck, Fingerprint, RectangleEllipsis, Dices, KeyRound, QrCode, ScanLine, LocateFixed, Image, Monitor, FileText, Map, Info, HeartHandshake, Globe, Wrench, ArrowUp, ArrowDown, RefreshCw, Timer, CandlestickChart, ExternalLink, Construction, Calculator, Gamepad2, Puzzle, Bot, Mailbox, ReceiptText, CalendarCheck, PenLine, MemoryStick, Hash, Link as LinkIcon, Users, Ghost, CircleDot, Castle, Rocket, Target, Ship, ArrowDownRight, Square, Search, Shield, MessageSquareHeart, Bomb, Crown, Palette, Loader2 } from 'lucide-react';
 import ImageNext from 'next/image';
-import AdvancedLivePrices from '@/components/features/advanced-live-prices';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import PWAInstallPrompt from '@/components/layout/pwa-install-prompt';
-import LinkShortener from '@/components/features/link-shortener';
-import SocialPostGenerator from '@/components/features/social-post-generator';
+
+const LoadingComponent = () => (
+    <div className="flex items-center justify-center p-8 text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin mr-2" />
+        <span>در حال بارگذاری ابزار...</span>
+    </div>
+);
+
+const AdvancedLivePrices = dynamic(() => import('@/components/features/advanced-live-prices'), { loading: () => <LoadingComponent /> });
+const UnitConverter = dynamic(() => import('@/components/features/unit-converter'), { loading: () => <LoadingComponent /> });
+const CurrencyConverter = dynamic(() => import('@/components/features/currency-converter'), { loading: () => <LoadingComponent /> });
+const DateConverter = dynamic(() => import('@/components/features/date-converter'), { loading: () => <LoadingComponent /> });
+const CryptoConverter = dynamic(() => import('@/components/features/crypto-converter'), { loading: () => <LoadingComponent /> });
+const AgeCalculator = dynamic(() => import('@/components/features/age-calculator'), { loading: () => <LoadingComponent /> });
+const BmiCalculator = dynamic(() => import('@/components/features/bmi-calculator'), { loading: () => <LoadingComponent /> });
+const PercentageCalculator = dynamic(() => import('@/components/features/percentage-calculator'), { loading: () => <LoadingComponent /> });
+const LoanCalculator = dynamic(() => import('@/components/features/loan-calculator'), { loading: () => <LoadingComponent /> });
+const Stopwatch = dynamic(() => import('@/components/features/stopwatch'), { loading: () => <LoadingComponent /> });
+const CountdownTimer = dynamic(() => import('@/components/features/countdown-timer'), { loading: () => <LoadingComponent /> });
+const DepositCalculator = dynamic(() => import('@/components/features/deposit-calculator'), { loading: () => <LoadingComponent /> });
+const NumberToWordsConverter = dynamic(() => import('@/components/features/number-to-words-converter'), { loading: () => <LoadingComponent /> });
+const NumberSystemConverter = dynamic(() => import('@/components/features/number-system-converter'), { loading: () => <LoadingComponent /> });
+const PasswordGenerator = dynamic(() => import('@/components/features/password-generator'), { loading: () => <LoadingComponent /> });
+const RandomNumberGenerator = dynamic(() => import('@/components/features/random-number-generator'), { loading: () => <LoadingComponent /> });
+const BinaryConverter = dynamic(() => import('@/components/features/binary-converter'), { loading: () => <LoadingComponent /> });
+const DistanceCalculator = dynamic(() => import('@/components/features/distance-calculator'), { loading: () => <LoadingComponent /> });
+const VehiclePlateIdentifier = dynamic(() => import('@/components/features/vehicle-plate-identifier'), { loading: () => <LoadingComponent /> });
+const TextAnalyzer = dynamic(() => import('@/components/features/text-analyzer'), { loading: () => <LoadingComponent /> });
+const ImageOptimizer = dynamic(() => import('@/components/features/image-optimizer'), { loading: () => <LoadingComponent /> });
+const TextSummarizer = dynamic(() => import('@/components/features/text-summarizer'), { loading: () => <LoadingComponent /> });
+const RialTomanConverter = dynamic(() => import('@/components/features/rial-toman-converter'), { loading: () => <LoadingComponent /> });
+const SavingsCalculator = dynamic(() => import('@/components/features/savings-calculator'), { loading: () => <LoadingComponent /> });
+const NationalIdValidator = dynamic(() => import('@/components/features/national-id-validator'), { loading: () => <LoadingComponent /> });
+const WorkoutTimer = dynamic(() => import('@/components/features/workout-timer'), { loading: () => <LoadingComponent /> });
+const ShebaConverter = dynamic(() => import('@/components/features/sheba-converter'), { loading: () => <LoadingComponent /> });
+const QrCodeGenerator = dynamic(() => import('@/components/features/qr-code-generator'), { loading: () => <LoadingComponent /> });
+const QrCodeReader = dynamic(() => import('@/components/features/qr-code-reader'), { loading: () => <LoadingComponent /> });
+const TicTacToe = dynamic(() => import('@/components/features/tic-tac-toe'), { loading: () => <LoadingComponent /> });
+const RockPaperScissors = dynamic(() => import('@/components/features/rock-paper-scissors'), { loading: () => <LoadingComponent /> });
+const Hangman = dynamic(() => import('@/components/features/hangman'), { loading: () => <LoadingComponent /> });
+const LegalFinancialChatbot = dynamic(() => import('@/components/features/legal-financial-chatbot'), { loading: () => <LoadingComponent /> });
+const SignatureGenerator = dynamic(() => import('@/components/features/signature-generator'), { loading: () => <LoadingComponent /> });
+const MemoryGame = dynamic(() => import('@/components/features/memory-game'), { loading: () => <LoadingComponent /> });
+const GuessTheNumber = dynamic(() => import('@/components/features/guess-the-number'), { loading: () => <LoadingComponent /> });
+const ConnectFour = dynamic(() => import('@/components/features/connect-four'), { loading: () => <LoadingComponent /> });
+const SimonSays = dynamic(() => import('@/components/features/simon-says'), { loading: () => <LoadingComponent /> });
+const OthelloGame = dynamic(() => import('@/components/features/othello-game'), { loading: () => <LoadingComponent /> });
+const TextToSpeech = dynamic(() => import('@/components/features/text-to-speech'), { loading: () => <LoadingComponent /> });
+const Game2048 = dynamic(() => import('@/components/features/game-2048'), { loading: () => <LoadingComponent /> });
+const LotteryTool = dynamic(() => import('@/components/features/lottery-tool'), { loading: () => <LoadingComponent /> });
+const EscapeFromTheBill = dynamic(() => import('@/components/features/escape-from-the-bill'), { loading: () => <LoadingComponent /> });
+const InvoiceGenerator = dynamic(() => import('@/components/features/invoice-generator'), { loading: () => <LoadingComponent /> });
+const ColorConverter = dynamic(() => import('@/components/features/color-converter'), { loading: () => <LoadingComponent /> });
+const Base64Converter = dynamic(() => import('@/components/features/base64-converter'), { loading: () => <LoadingComponent /> });
+const LinkShortener = dynamic(() => import('@/components/features/link-shortener'), { loading: () => <LoadingComponent /> });
+const SocialPostGenerator = dynamic(() => import('@/components/features/social-post-generator'), { loading: () => <LoadingComponent /> });
+
 
 const OthelloIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-8 w-8">
@@ -99,10 +111,10 @@ const toolCategories = [
     title: 'ابزارهای هوش مصنوعی',
     icon: <BrainCircuit className="h-6 w-6 text-primary-foreground" />,
     tools: [
-       { id: 'text-summarizer', title: 'خلاصه‌ساز هوشمند', icon: <BookText className="h-8 w-8 text-cyan-400" />, component: <TextSummarizer /> },
-       { id: 'legal-financial-chatbot', title: 'چت‌بات حقوقی و مالی', icon: <Bot className="h-8 w-8 text-blue-400" />, component: <LegalFinancialChatbot /> },
-       { id: 'text-to-speech', title: 'نوشتار به گفتار', icon: <BookText className="h-8 w-8 text-fuchsia-400" />, component: <TextToSpeech /> },
-       { id: 'social-post-generator', title: 'ربات تولید پست', icon: <RectangleEllipsis className="h-8 w-8 text-rose-400" />, component: <SocialPostGenerator /> },
+       { id: 'text-summarizer', title: 'خلاصه‌ساز هوشمند', icon: <BookText className="h-8 w-8 text-cyan-400" />, component: TextSummarizer },
+       { id: 'legal-financial-chatbot', title: 'چت‌بات حقوقی و مالی', icon: <Bot className="h-8 w-8 text-blue-400" />, component: LegalFinancialChatbot },
+       { id: 'text-to-speech', title: 'نوشتار به گفتار', icon: <BookText className="h-8 w-8 text-fuchsia-400" />, component: TextToSpeech },
+       { id: 'social-post-generator', title: 'ربات تولید پست', icon: <RectangleEllipsis className="h-8 w-8 text-rose-400" />, component: SocialPostGenerator },
        { id: 'book-reader', title: 'کتابخوان آنلاین (ترجمه)', icon: <BookText className="h-8 w-8 text-lime-400" />, isWip: true },
        { id: 'pdf-word-converter', title: 'PDF ↔ Word (و بالعکس)', icon: <RectangleEllipsis className="h-8 w-8 text-blue-400" />, isWip: true },
        { id: 'pdf-image-converter', title: 'PDF ↔ عکس (و برعکس)', icon: <RectangleEllipsis className="h-8 w-8 text-green-400" />, isWip: true },
@@ -113,24 +125,24 @@ const toolCategories = [
     title: 'مبدل‌ها',
     icon: <FlaskConical className="h-6 w-6 text-primary-foreground" />,
     tools: [
-      { id: 'unit-converter', title: 'تبدیل واحد', icon: <Scale className="h-8 w-8 text-blue-400" />, component: <UnitConverter /> },
-      { id: 'currency-converter', title: 'تبدیل ارز', icon: <Landmark className="h-8 w-8 text-green-400" />, component: <CurrencyConverter /> },
-      { id: 'date-converter', title: 'تبدیل تاریخ', icon: <CalendarDays className="h-8 w-8 text-purple-400" />, component: <DateConverter /> },
-      { id: 'rial-toman-converter', title: 'ریال و تومان', icon: <Repeat className="h-8 w-8 text-emerald-400" />, component: <RialTomanConverter /> },
-      { id: 'number-to-words', title: 'عدد به حروف', icon: <SpellCheck className="h-8 w-8 text-amber-400" />, component: <NumberToWordsConverter /> },
-      { id: 'number-system', title: 'تبدیل ارقام', icon: <Binary className="h-8 w-8 text-sky-400" />, component: <NumberSystemConverter /> },
-      { id: 'binary-converter', title: 'متن و باینری', icon: <Binary className="h-8 w-8 text-cyan-400" />, component: <BinaryConverter /> },
-      { id: 'color-converter', title: 'مبدل رنگ (HEX, RGB, HSL)', icon: <Palette className="h-8 w-8 text-rose-400" />, component: <ColorConverter /> },
-      { id: 'base64-converter', title: 'Base64 (متن/فایل)', icon: <Hash className="h-8 w-8 text-violet-400" />, component: <Base64Converter /> },
+      { id: 'unit-converter', title: 'تبدیل واحد', icon: <Scale className="h-8 w-8 text-blue-400" />, component: UnitConverter },
+      { id: 'currency-converter', title: 'تبدیل ارز', icon: <Landmark className="h-8 w-8 text-green-400" />, component: CurrencyConverter },
+      { id: 'date-converter', title: 'تبدیل تاریخ', icon: <CalendarDays className="h-8 w-8 text-purple-400" />, component: DateConverter },
+      { id: 'rial-toman-converter', title: 'ریال و تومان', icon: <Repeat className="h-8 w-8 text-emerald-400" />, component: RialTomanConverter },
+      { id: 'number-to-words', title: 'عدد به حروف', icon: <SpellCheck className="h-8 w-8 text-amber-400" />, component: NumberToWordsConverter },
+      { id: 'number-system', title: 'تبدیل ارقام', icon: <Binary className="h-8 w-8 text-sky-400" />, component: NumberSystemConverter },
+      { id: 'binary-converter', title: 'متن و باینری', icon: <Binary className="h-8 w-8 text-cyan-400" />, component: BinaryConverter },
+      { id: 'color-converter', title: 'مبدل رنگ (HEX, RGB, HSL)', icon: <Palette className="h-8 w-8 text-rose-400" />, component: ColorConverter },
+      { id: 'base64-converter', title: 'Base64 (متن/فایل)', icon: <Hash className="h-8 w-8 text-violet-400" />, component: Base64Converter },
     ]
   },
   {
     title: 'ابزارهای زمان و تاریخ',
     icon: <CalendarClock className="h-6 w-6 text-primary-foreground" />,
     tools: [
-      { id: 'age-calculator', title: 'محاسبه سن', icon: <Gift className="h-8 w-8 text-pink-400" />, component: <AgeCalculator /> },
-      { id: 'stopwatch', title: 'کرونومتر', icon: <Clock className="h-8 w-8 text-indigo-400" />, component: <Stopwatch /> },
-      { id: 'countdown-timer', title: 'تایمر شمارش معکوس', icon: <Hourglass className="h-8 w-8 text-blue-400" />, component: <CountdownTimer /> },
+      { id: 'age-calculator', title: 'محاسبه سن', icon: <Gift className="h-8 w-8 text-pink-400" />, component: AgeCalculator },
+      { id: 'stopwatch', title: 'کرونومتر', icon: <Clock className="h-8 w-8 text-indigo-400" />, component: Stopwatch },
+      { id: 'countdown-timer', title: 'تایمر شمارش معکوس', icon: <Hourglass className="h-8 w-8 text-blue-400" />, component: CountdownTimer },
       { id: 'events-calendar', title: 'تقویم مناسبت‌ها', icon: <CalendarCheck className="h-8 w-8 text-rose-400" />, isExternal: true, href: 'https://www.google.com/calendar/embed?src=fa.ir%23holiday%40group.v.calendar.google.com&ctz=Asia%2FTehran' },
     ]
   },
@@ -138,36 +150,36 @@ const toolCategories = [
     title: 'محاسبات عمومی و مالی',
     icon: <Wallet className="h-6 w-6 text-primary-foreground" />,
     tools: [
-      { id: 'crypto-converter', title: 'نرخ ارز دیجیتال', icon: <Bitcoin className="h-8 w-8 text-orange-400" />, component: <CryptoConverter /> },
-      { id: 'loan-calculator', title: 'اقساط وام', icon: <Banknote className="h-8 w-8 text-rose-400" />, component: <LoanCalculator /> },
-      { id: 'deposit-calculator', title: 'سود سپرده', icon: <PiggyBank className="h-8 w-8 text-emerald-400" />, component: <DepositCalculator /> },
-      { id: 'savings-calculator', title: 'محاسبه‌گر پس‌انداز', icon: <TrendingUp className="h-8 w-8 text-lime-400" />, component: <SavingsCalculator /> },
-      { id: 'percentage-calculator', title: 'محاسبه درصد', icon: <Percent className="h-8 w-8 text-teal-400" />, component: <PercentageCalculator /> },
-      { id: 'invoice-generator', title: 'مولد فاکتور رسمی', icon: <ReceiptText className="h-8 w-8 text-indigo-400" />, component: <InvoiceGenerator /> },
+      { id: 'crypto-converter', title: 'نرخ ارز دیجیتال', icon: <Bitcoin className="h-8 w-8 text-orange-400" />, component: CryptoConverter },
+      { id: 'loan-calculator', title: 'اقساط وام', icon: <Banknote className="h-8 w-8 text-rose-400" />, component: LoanCalculator },
+      { id: 'deposit-calculator', title: 'سود سپرده', icon: <PiggyBank className="h-8 w-8 text-emerald-400" />, component: DepositCalculator },
+      { id: 'savings-calculator', title: 'محاسبه‌گر پس‌انداز', icon: <TrendingUp className="h-8 w-8 text-lime-400" />, component: SavingsCalculator },
+      { id: 'percentage-calculator', title: 'محاسبه درصد', icon: <Percent className="h-8 w-8 text-teal-400" />, component: PercentageCalculator },
+      { id: 'invoice-generator', title: 'مولد فاکتور رسمی', icon: <ReceiptText className="h-8 w-8 text-indigo-400" />, component: InvoiceGenerator },
     ]
   },
   {
     title: 'ورزش و سلامت',
     icon: <HeartPulse className="h-6 w-6 text-primary-foreground" />,
     tools: [
-      { id: 'workout-timer', title: 'زمان‌سنج تمرین', icon: <Dumbbell className="h-8 w-8 text-orange-400" />, component: <WorkoutTimer /> },
-      { id: 'bmi-calculator', title: 'محاسبه BMI', icon: <HeartPulse className="h-8 w-8 text-red-400" />, component: <BmiCalculator /> },
+      { id: 'workout-timer', title: 'زمان‌سنج تمرین', icon: <Dumbbell className="h-8 w-8 text-orange-400" />, component: WorkoutTimer },
+      { id: 'bmi-calculator', title: 'محاسبه BMI', icon: <HeartPulse className="h-8 w-8 text-red-400" />, component: BmiCalculator },
     ]
   },
   {
     title: 'سرگرمی و بازی',
     icon: <Gamepad2 className="h-6 w-6 text-primary-foreground" />,
     tools: [
-      { id: 'tic-tac-toe', title: 'بازی دوز', icon: <Puzzle className="h-8 w-8 text-red-400" />, component: <TicTacToe />, mode: 'دو حالته' },
-      { id: 'rock-paper-scissors', title: 'سنگ کاغذ قیچی', icon: <RectangleEllipsis className="h-8 w-8 text-yellow-400" />, component: <RockPaperScissors />, mode: 'دو حالته' },
-      { id: 'hangman', title: 'حدس کلمه', icon: <Brain className="h-8 w-8 text-green-400" />, component: <Hangman />, mode: 'مقابل سیستم' },
-      { id: 'memory-game', title: 'بازی حافظه', icon: <MemoryStick className="h-8 w-8 text-sky-400" />, component: <MemoryGame />, mode: 'تک نفره' },
-      { id: 'guess-the-number', title: 'حدس عدد', icon: <Hash className="h-8 w-8 text-fuchsia-400" />, component: <GuessTheNumber />, mode: 'مقابل سیستم' },
-      { id: 'connect-four', title: 'چهار در یک ردیف', icon: <RectangleEllipsis className="h-8 w-8 text-blue-500" />, component: <ConnectFour />, mode: 'دو نفره' },
-      { id: 'simon-says', title: 'بازی سایمون', icon: <BrainCircuit className="h-8 w-8 text-purple-500" />, component: <SimonSays />, mode: 'تک نفره' },
-      { id: 'othello-game', title: 'بازی اتللو', icon: <OthelloIcon />, component: <OthelloGame />, mode: 'دو حالته' },
-      { id: '2048', title: 'بازی 2048', icon: <RectangleEllipsis className="h-8 w-8 text-indigo-400" />, component: <Game2048 />, mode: 'تک نفره' },
-      { id: 'escape-the-bill', title: 'فرار از قبض برق', icon: <RectangleEllipsis className="h-8 w-8 text-yellow-500" />, component: <EscapeFromTheBill />, mode: 'تک نفره' },
+      { id: 'tic-tac-toe', title: 'بازی دوز', icon: <Puzzle className="h-8 w-8 text-red-400" />, component: TicTacToe, mode: 'دو حالته' },
+      { id: 'rock-paper-scissors', title: 'سنگ کاغذ قیچی', icon: <RectangleEllipsis className="h-8 w-8 text-yellow-400" />, component: RockPaperScissors, mode: 'دو حالته' },
+      { id: 'hangman', title: 'حدس کلمه', icon: <Brain className="h-8 w-8 text-green-400" />, component: Hangman, mode: 'مقابل سیستم' },
+      { id: 'memory-game', title: 'بازی حافظه', icon: <MemoryStick className="h-8 w-8 text-sky-400" />, component: MemoryGame, mode: 'تک نفره' },
+      { id: 'guess-the-number', title: 'حدس عدد', icon: <Hash className="h-8 w-8 text-fuchsia-400" />, component: GuessTheNumber, mode: 'مقابل سیستم' },
+      { id: 'connect-four', title: 'چهار در یک ردیف', icon: <RectangleEllipsis className="h-8 w-8 text-blue-500" />, component: ConnectFour, mode: 'دو نفره' },
+      { id: 'simon-says', title: 'بازی سایمون', icon: <BrainCircuit className="h-8 w-8 text-purple-500" />, component: SimonSays, mode: 'تک نفره' },
+      { id: 'othello-game', title: 'بازی اتللو', icon: <OthelloIcon />, component: OthelloGame, mode: 'دو حالته' },
+      { id: '2048', title: 'بازی 2048', icon: <RectangleEllipsis className="h-8 w-8 text-indigo-400" />, component: Game2048, mode: 'تک نفره' },
+      { id: 'escape-the-bill', title: 'فرار از قبض برق', icon: <RectangleEllipsis className="h-8 w-8 text-yellow-500" />, component: EscapeFromTheBill, mode: 'تک نفره' },
       { id: 'minesweeper-3d', title: 'Minesweeper Extreme 3D', icon: <Bomb className="h-8 w-8 text-gray-400" />, isWip: true },
       { id: 'archaeology-game', title: 'بازی زیرخاکی', icon: <Ghost className="h-8 w-8 text-yellow-400" />, isWip: true },
       { id: 'pac-man', title: 'Pac-Man Glow', icon: <Ghost className="h-8 w-8 text-yellow-400" />, isWip: true },
@@ -188,27 +200,27 @@ const toolCategories = [
     title: 'ابزارهای کاربردی',
     icon: <User className="h-6 w-6 text-primary-foreground" />,
     tools: [
-      { id: 'sheba-converter', title: 'ابزار شبا/حساب', icon: <ShieldCheck className="h-8 w-8 text-green-500" />, component: <ShebaConverter /> },
-      { id: 'national-id-validator', title: 'بررسی صحت و شهر شماره ملی', icon: <Fingerprint className="h-8 w-8 text-teal-400" />, component: <NationalIdValidator /> },
-      { id: 'link-shortener', title: 'کوتاه کننده لینک', icon: <LinkIcon className="h-8 w-8 text-sky-400" />, component: <LinkShortener /> },
-      { id: 'vehicle-plate-identifier', title: 'هوشمند پلاک', icon: <RectangleEllipsis className="h-8 w-8 text-indigo-400" />, component: <VehiclePlateIdentifier /> },
-      { id: 'random-number', title: 'عدد تصادفی', icon: <Dices className="h-8 w-8 text-orange-400" />, component: <RandomNumberGenerator /> },
-      { id: 'password-generator', title: 'تولید رمز عبور', icon: <KeyRound className="h-8 w-8 text-violet-400" />, component: <PasswordGenerator /> },
-      { id: 'qr-code-generator', title: 'QR Code ساز', icon: <QrCode className="h-8 w-8 text-emerald-400" />, component: <QrCodeGenerator /> },
-      { id: 'qr-code-reader', title: 'QR Code خوان', icon: <ScanLine className="h-8 w-8 text-blue-400" />, component: <QrCodeReader /> },
-      { id: 'image-optimizer', title: 'کاهش حجم تصویر', icon: <Image className="h-8 w-8 text-orange-400" />, component: <ImageOptimizer /> },
-      { id: 'text-analyzer', title: 'تحلیلگر متن', icon: <FileText className="h-8 w-8 text-yellow-400" />, component: <TextAnalyzer /> },
-      { id: 'distance-calculator', title: 'محاسبه مسافت', icon: <Map className="h-8 w-8 text-fuchsia-400" />, component: <DistanceCalculator /> },
-      { id: 'signature-generator', title: 'تولید امضا دیجیتال', icon: <PenLine className="h-8 w-8 text-slate-400" />, component: <SignatureGenerator /> },
+      { id: 'sheba-converter', title: 'ابزار شبا/حساب', icon: <ShieldCheck className="h-8 w-8 text-green-500" />, component: ShebaConverter },
+      { id: 'national-id-validator', title: 'بررسی صحت و شهر شماره ملی', icon: <Fingerprint className="h-8 w-8 text-teal-400" />, component: NationalIdValidator },
+      { id: 'link-shortener', title: 'کوتاه کننده لینک', icon: <LinkIcon className="h-8 w-8 text-sky-400" />, component: LinkShortener },
+      { id: 'vehicle-plate-identifier', title: 'هوشمند پلاک', icon: <RectangleEllipsis className="h-8 w-8 text-indigo-400" />, component: VehiclePlateIdentifier },
+      { id: 'random-number', title: 'عدد تصادفی', icon: <Dices className="h-8 w-8 text-orange-400" />, component: RandomNumberGenerator },
+      { id: 'password-generator', title: 'تولید رمز عبور', icon: <KeyRound className="h-8 w-8 text-violet-400" />, component: PasswordGenerator },
+      { id: 'qr-code-generator', title: 'QR Code ساز', icon: <QrCode className="h-8 w-8 text-emerald-400" />, component: QrCodeGenerator },
+      { id: 'qr-code-reader', title: 'QR Code خوان', icon: <ScanLine className="h-8 w-8 text-blue-400" />, component: QrCodeReader },
+      { id: 'image-optimizer', title: 'کاهش حجم تصویر', icon: <Image className="h-8 w-8 text-orange-400" />, component: ImageOptimizer },
+      { id: 'text-analyzer', title: 'تحلیلگر متن', icon: <FileText className="h-8 w-8 text-yellow-400" />, component: TextAnalyzer },
+      { id: 'distance-calculator', title: 'محاسبه مسافت', icon: <Map className="h-8 w-8 text-fuchsia-400" />, component: DistanceCalculator },
+      { id: 'signature-generator', title: 'تولید امضا دیجیتال', icon: <PenLine className="h-8 w-8 text-slate-400" />, component: SignatureGenerator },
       { id: 'ip-detector', title: 'تشخیص IP', icon: <LocateFixed className="h-8 w-8 text-sky-400" />, isWip: true },
-      { id: 'lottery-tool', title: 'ابزار قرعه کشی', icon: <Dices className="h-8 w-8 text-teal-400" />, component: <LotteryTool /> },
+      { id: 'lottery-tool', title: 'ابزار قرعه کشی', icon: <Dices className="h-8 w-8 text-teal-400" />, component: LotteryTool },
       { id: 'post-tracker', title: 'پیگیری مرسوله پستی', icon: <Mailbox className="h-8 w-8 text-rose-400" />, isExternal: true, href: 'https://tracking.post.ir/'},
     ]
   }
 ];
 
 
-export default async function Home() {
+export default function Home() {
   const initialPrices: Omit<PriceData, 'cryptos'> = {
     GoldOunce: { price: "2320", change: "+0.2%" },
     MesghalGold: { price: "146500000", change: "-0.5%" },
@@ -285,7 +297,7 @@ export default async function Home() {
                             <CardHeader>
                               <CardTitle className='flex items-center justify-between text-xl font-display text-muted-foreground'>
                                  <div className='flex items-center gap-3'>
-                                     {React.cloneElement(tool.icon, { className: "h-7 w-7" })}
+                                     {React.cloneElement(tool.icon as React.ReactElement, { className: "h-7 w-7" })}
                                      {tool.title}
                                  </div>
                                  <Badge variant="outline">به‌زودی...</Badge>
@@ -307,7 +319,7 @@ export default async function Home() {
                               <CardHeader>
                                 <CardTitle className='flex items-center justify-between text-xl font-display'>
                                    <div className='flex items-center gap-3'>
-                                       {React.cloneElement(tool.icon, { className: "h-7 w-7" })}
+                                       {React.cloneElement(tool.icon as React.ReactElement, { className: "h-7 w-7" })}
                                        {tool.title}
                                    </div>
                                    <div className='flex items-center gap-2 text-sm text-muted-foreground'>
@@ -320,17 +332,19 @@ export default async function Home() {
                         </a>
                       )
                     }
+                    // Here we render the dynamically imported component
+                    const ToolComponent = typedTool.component;
                     return (
                         <Card key={tool.id} id={tool.id} className="glass-effect scroll-mt-24">
                           <CardHeader>
                             <CardTitle className='flex items-center justify-between text-xl font-display'>
                                <div className='flex items-center gap-3'>
-                                {React.cloneElement(tool.icon, { className: "h-7 w-7" })}
+                                {React.cloneElement(tool.icon as React.ReactElement, { className: "h-7 w-7" })}
                                 {tool.title}
                               </div>
                             </CardTitle>
                           </CardHeader>
-                          {typedTool.component}
+                          <ToolComponent />
                         </Card>
                     )
                 })}
@@ -505,5 +519,6 @@ export default async function Home() {
 
 
     
+
 
 

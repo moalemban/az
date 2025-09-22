@@ -137,7 +137,6 @@ export default function OthelloGame() {
   const makeComputerMove = useCallback(() => {
     const computerValidMoves = getValidMoves(board, 'white');
     if (computerValidMoves.length === 0) {
-        // If computer has no moves, pass turn back to player
         if(getValidMoves(board, 'black').length > 0) {
             setCurrentPlayer('black');
         }
@@ -152,12 +151,12 @@ export default function OthelloGame() {
         let maxScore = -Infinity;
         for (const move of computerValidMoves) {
             const [r, c] = move;
-            let score = pieceWeights[r][c]; // Positional advantage
+            let score = pieceWeights[r][c];
             
             if (difficulty === 'hard') {
                 const tempBoard = makeMove(board, move, 'white').newBoard;
                 const playerNextMoves = getValidMoves(tempBoard, 'black');
-                score -= playerNextMoves.length * 5; // Mobility heuristic
+                score -= playerNextMoves.length * 5;
             }
 
             if (score > maxScore) {
@@ -168,7 +167,18 @@ export default function OthelloGame() {
     }
 
     if (bestMove) {
-        setTimeout(() => handleCellClick(bestMove![0], bestMove![1]), 500);
+        const [row, col] = bestMove;
+        setTimeout(() => {
+             const { newBoard } = makeMove(board, [row, col], 'white');
+            setBoard(newBoard);
+            setScores(calculateScores(newBoard));
+            const opponentHasMoves = getValidMoves(newBoard, 'black').length > 0;
+            if (opponentHasMoves) {
+              setCurrentPlayer('black');
+            } else if (getValidMoves(newBoard, 'white').length === 0) {
+              checkGameOver(newBoard);
+            }
+        }, 500);
     }
 }, [board, difficulty, getValidMoves]);
 

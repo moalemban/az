@@ -95,7 +95,7 @@ export default function OthelloGame() {
     return { black, white };
   };
   
-    const makeMove = (currentBoard: Board, move: [number, number], player: Player) => {
+    const makeMove = useCallback((currentBoard: Board, move: [number, number], player: Player) => {
       const [row, col] = move;
       const newBoard = currentBoard.map(r => [...r]);
       const piecesToFlip: [number, number][] = [];
@@ -103,7 +103,7 @@ export default function OthelloGame() {
 
       for (const [dr, dc] of directions) {
           let r = row + dr, c = col + dc;
-          const lineToFlip = [];
+          const lineToFlip: [number, number][] = [];
           while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
               if (newBoard[r][c] === opp) lineToFlip.push([r, c]);
               else if (newBoard[r][c] === player) { piecesToFlip.push(...lineToFlip); break; } 
@@ -114,7 +114,7 @@ export default function OthelloGame() {
       newBoard[row][col] = player;
       piecesToFlip.forEach(([r, c]) => { newBoard[r][c] = player; });
       return { newBoard };
-  }
+  }, []);
 
 
   const checkGameOver = useCallback((boardState: Board) => {
@@ -180,7 +180,7 @@ export default function OthelloGame() {
             }
         }, 500);
     }
-}, [board, difficulty, getValidMoves]);
+}, [board, difficulty, getValidMoves, makeMove, checkGameOver]);
 
   useEffect(() => {
     if (gameMode === 'vs-computer' && currentPlayer === 'white' && !gameOver) {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Award, Redo, RotateCcw, Trophy, ChevronsLeft, ChevronsRight, ChevronsUp, ChevronsDown, Info } from 'lucide-react';
+import { Award, Redo, RotateCcw, Trophy, ChevronsLeft, ChevronsRight, ChevronsUp, ChevronsDown, Info, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -26,9 +26,9 @@ const tileColorMapping: { [key: number]: string } = {
     256: "bg-cyan-500 text-white",
     512: "bg-sky-500 text-white",
     1024: "bg-blue-600 text-white",
-    2048: "bg-indigo-600 text-white",
-    4096: "bg-purple-700 text-white",
-    8192: "bg-fuchsia-700 text-white",
+    2048: "bg-indigo-600 text-white shadow-lg shadow-indigo-400/50",
+    4096: "bg-purple-700 text-white shadow-lg shadow-purple-400/50",
+    8192: "bg-fuchsia-700 text-white shadow-lg shadow-fuchsia-400/50",
 };
 
 
@@ -96,7 +96,7 @@ export default function Game2048() {
         if (score > highScore && gameMode) {
             setHighScore(score);
             localStorage.setItem(`2048-highscore-${gameMode}`, score.toString());
-            toast({ title: 'رکورد جدید!', description: `شما رکورد جدید ${score.toLocaleString('fa-IR')} را برای حالت ${gameMode} ثبت کردید.` });
+            toast({ title: 'رکورد جدید!', description: `شما رکورد جدید ${score.toLocaleString('fa-IR')} را برای حالت ${getModeText(gameMode)} ثبت کردید.` });
         }
     }, [score, highScore, gameMode, toast]);
 
@@ -161,8 +161,8 @@ export default function Game2048() {
                 const reversed = direction === 'down' ? [...line].reverse() : line;
                 const processed = processLine(reversed);
                 const finalLine = direction === 'down' ? [...processed].reverse() : processed;
+                if(newBoard.some((row, rIdx) => row[c] !== finalLine[rIdx])) moved = true;
                 for (let r = 0; r < BOARD_SIZE; r++) {
-                    if (newBoard[r][c] !== finalLine[r]) moved = true;
                     newBoard[r][c] = finalLine[r];
                 }
             }
@@ -206,6 +206,12 @@ export default function Game2048() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gameOver, gameMode, board]); // re-bind with updated board state
 
+    const getModeText = (mode: GameMode | null) => {
+        if (mode === 'classic') return "کلاسیک";
+        if (mode === 'challenge') return "چالش سرعتی";
+        return "بی‌نهایت";
+    }
+
     if (!gameMode) {
         return (
             <CardContent className="flex flex-col items-center gap-4 pt-6">
@@ -217,12 +223,6 @@ export default function Game2048() {
                 </div>
             </CardContent>
         );
-    }
-    
-    const getModeText = () => {
-        if (gameMode === 'classic') return "کلاسیک";
-        if (gameMode === 'challenge') return "چالش سرعتی";
-        return "بی‌نهایت";
     }
 
     return (
@@ -248,7 +248,7 @@ export default function Game2048() {
                 </div>
                 
                  <div className='flex items-center gap-2'>
-                    <Badge variant="secondary" className="h-8 px-3 text-sm">{getModeText()}</Badge>
+                    <Badge variant="secondary" className="h-8 px-3 text-sm">{getModeText(gameMode)}</Badge>
                     {gameMode === 'challenge' && (
                         <Badge variant="outline" className="h-8 px-3 text-sm font-mono">{CHALLENGE_MOVES - moves} حرکت</Badge>
                     )}

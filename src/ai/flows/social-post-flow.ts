@@ -70,7 +70,7 @@ const socialPostFlow = ai.defineFlow(
     inputSchema: SocialPostInputSchema,
     outputSchema: SocialPostOutputSchema,
   },
-  async (input) => {
+  async (input: SocialPostInput) => {
     const { output } = await prompt(input);
     if (!output) {
       throw new Error('Failed to generate social post. The model returned no output.');

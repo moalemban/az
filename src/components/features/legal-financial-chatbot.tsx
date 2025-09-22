@@ -24,19 +24,6 @@ type Message = {
   content: string;
 };
 
-const HistoryItemSchema = z.object({
-  role: z.enum(['user', 'bot']),
-  content: z.string(),
-});
-
-const LegalFinancialChatInputSchema = z.object({
-  history: z.array(HistoryItemSchema).optional(),
-  prompt: z.string(),
-});
-
-type LegalFinancialChatInput = z.infer<typeof LegalFinancialChatInputSchema>;
-
-
 export default function LegalFinancialChatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -156,3 +143,5 @@ export default function LegalFinancialChatbot() {
     </CardContent>
   );
 }
+
+    

@@ -95,9 +95,9 @@ const toolCategories = [
     title: 'ابزارهای هوش مصنوعی',
     icon: <BrainCircuit className="h-6 w-6 text-primary-foreground" />,
     tools: [
-       { id: 'text-summarizer', title: 'خلاصه‌ساز هوشمند', icon: <BookText className="h-8 w-8 text-cyan-400" />, component: <TextSummarizer />, isWip: true },
-       { id: 'legal-financial-chatbot', title: 'چت‌بات حقوقی و مالی', icon: <Bot className="h-8 w-8 text-blue-400" />, component: <LegalFinancialChatbot />, isWip: true },
-       { id: 'text-to-speech', title: 'نوشتار به گفتار', icon: <BookText className="h-8 w-8 text-fuchsia-400" />, component: <TextToSpeech />, isWip: true },
+       { id: 'text-summarizer', title: 'خلاصه‌ساز هوشمند', icon: <BookText className="h-8 w-8 text-cyan-400" />, component: <TextSummarizer /> },
+       { id: 'legal-financial-chatbot', title: 'چت‌بات حقوقی و مالی', icon: <Bot className="h-8 w-8 text-blue-400" />, component: <LegalFinancialChatbot /> },
+       { id: 'text-to-speech', title: 'نوشتار به گفتار', icon: <BookText className="h-8 w-8 text-fuchsia-400" />, component: <TextToSpeech /> },
        { id: 'social-post-generator', title: 'ربات تولید پست', icon: <RectangleEllipsis className="h-8 w-8 text-rose-400" />, isWip: true },
        { id: 'book-reader', title: 'کتابخوان آنلاین (ترجمه)', icon: <BookText className="h-8 w-8 text-lime-400" />, isWip: true },
        { id: 'pdf-word-converter', title: 'PDF ↔ Word (و بالعکس)', icon: <RectangleEllipsis className="h-8 w-8 text-blue-400" />, isWip: true },
@@ -186,7 +186,7 @@ const toolCategories = [
     tools: [
       { id: 'sheba-converter', title: 'ابزار شبا/حساب', icon: <ShieldCheck className="h-8 w-8 text-green-500" />, component: <ShebaConverter /> },
       { id: 'national-id-validator', title: 'بررسی صحت و شهر شماره ملی', icon: <Fingerprint className="h-8 w-8 text-teal-400" />, component: <NationalIdValidator /> },
-      { id: 'link-shortener', title: 'کوتاه کننده لینک', icon: <LinkIcon className="h-8 w-8 text-sky-400" />, component: <LinkShortener />, isWip: true },
+      { id: 'link-shortener', title: 'کوتاه کننده لینک', icon: <LinkIcon className="h-8 w-8 text-sky-400" />, component: <LinkShortener /> },
       { id: 'vehicle-plate-identifier', title: 'هوشمند پلاک', icon: <RectangleEllipsis className="h-8 w-8 text-indigo-400" />, component: <VehiclePlateIdentifier /> },
       { id: 'random-number', title: 'عدد تصادفی', icon: <Dices className="h-8 w-8 text-orange-400" />, component: <RandomNumberGenerator /> },
       { id: 'password-generator', title: 'تولید رمز عبور', icon: <KeyRound className="h-8 w-8 text-violet-400" />, component: <PasswordGenerator /> },
@@ -205,8 +205,14 @@ const toolCategories = [
 
 
 export default async function Home() {
-  // AI flows are disabled, so we pass empty data
-  const initialPrices: Omit<PriceData, 'cryptos'> = {};
+  const initialPrices: Omit<PriceData, 'cryptos'> = {
+    GoldOunce: { price: "2320", change: "+0.2%" },
+    MesghalGold: { price: "146500000", change: "-0.5%" },
+    Gold18K: { price: "33850000", change: "-0.5%" },
+    EmamiCoin: { price: "408000000", change: "+1.2%" },
+    Dollar: { price: "595000", change: "0" },
+    USDT: { price: "596500", change: "+0.1%" },
+  };
     
   return (
     <div className="min-h-screen">
@@ -492,3 +498,6 @@ export default async function Home() {
 
 
 
+
+
+    

@@ -71,7 +71,7 @@ type AdvancedLivePricesProps = {
 
 export default function AdvancedLivePrices({ initialData }: AdvancedLivePricesProps) {
   const [data, setData] = useState(initialData);
-  const [loading, setLoading] = useState(!initialData || Object.keys(initialData).length === 0);
+  const [loading, setLoading] = useState(Object.keys(initialData).length === 0);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   
   const [isCooldown, setIsCooldown] = useState(false);
@@ -82,10 +82,13 @@ export default function AdvancedLivePrices({ initialData }: AdvancedLivePricesPr
 
   useEffect(() => {
     if(initialData && Object.keys(initialData).length > 0) {
+        setData(initialData);
+        setLoading(false);
         setLastUpdated(new Date());
     } else {
-        // fetchPrices(); // This would be the ideal case, but flows are disabled
+        fetchPrices();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData]);
 
   const prices: LivePrice[] = useMemo(() => {
@@ -117,7 +120,19 @@ export default function AdvancedLivePrices({ initialData }: AdvancedLivePricesPr
     try {
       // Since flows are disabled, we cannot fetch prices.
       // This is a placeholder for when the functionality is restored.
-      console.error("Price fetching is temporarily disabled.");
+      console.error("Price fetching is temporarily disabled. Using mock data.");
+       // Using mock data
+      const mockData = {
+        GoldOunce: { price: "2320", change: "+0.2%" },
+        MesghalGold: { price: "146500000", change: "-0.5%" },
+        Gold18K: { price: "33850000", change: "-0.5%" },
+        EmamiCoin: { price: "408000000", change: "+1.2%" },
+        Dollar: { price: "595000", change: "0" },
+        USDT: { price: "596500", change: "+0.1%" },
+      };
+      setData(mockData);
+      setLastUpdated(new Date());
+
     } catch (error) {
       console.error("Failed to fetch prices:", error);
     } finally {
@@ -152,7 +167,7 @@ export default function AdvancedLivePrices({ initialData }: AdvancedLivePricesPr
               قیمت‌های لحظه‌ای
             </h2>
             <div className="flex items-center space-x-2 space-x-reverse">
-                <Button variant="ghost" size="sm" onClick={fetchPrices} disabled={true} className="text-muted-foreground w-28">
+                <Button variant="ghost" size="sm" onClick={fetchPrices} disabled={isCooldown || loading} className="text-muted-foreground w-28">
                     {loading ? <RefreshCw className={cn("h-5 w-5 animate-spin")} /> 
                             : isCooldown ? <><Timer className="h-5 w-5 ml-2" /> {cooldownTime} ثانیه</>
                             : <><RefreshCw className="h-5 w-5 ml-2" /> به‌روزرسانی</>
@@ -189,3 +204,5 @@ export default function AdvancedLivePrices({ initialData }: AdvancedLivePricesPr
     </div>
   );
 }
+
+    

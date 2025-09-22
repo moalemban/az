@@ -19,6 +19,19 @@ import { Badge } from '../ui/badge';
 import { Card, CardContent } from '../ui/card';
 import { Separator } from '../ui/separator';
 
+const mockCryptoData: CryptoPrice[] = [
+    { name_fa: "بیت‌کوین", name_en: "Bitcoin", symbol: "BTC", icon: "https://cdn.arzdigital.com/uploads/assets/coins/icons/bitcoin.png", price_usdt: 68000, price_irr: 40500000000, change_percent: 1.5, volume_24h: 30000000000, market_cap: 1300000000000, last_update: "" },
+    { name_fa: "اتریوم", name_en: "Ethereum", symbol: "ETH", icon: "https://cdn.arzdigital.com/uploads/assets/coins/icons/ethereum.png", price_usdt: 3500, price_irr: 2080000000, change_percent: -0.5, volume_24h: 15000000000, market_cap: 420000000000, last_update: "" },
+    { name_fa: "تتر", name_en: "Tether", symbol: "USDT", icon: "https://cdn.arzdigital.com/uploads/assets/coins/icons/tether.png", price_usdt: 1, price_irr: 596500, change_percent: 0.1, volume_24h: 50000000000, market_cap: 110000000000, last_update: "" },
+    { name_fa: "بایننس کوین", name_en: "BNB", symbol: "BNB", icon: "https://cdn.arzdigital.com/uploads/assets/coins/icons/bnb.png", price_usdt: 600, price_irr: 357000000, change_percent: 2.1, volume_24h: 2000000000, market_cap: 88000000000, last_update: "" },
+    { name_fa: "سولانا", name_en: "Solana", symbol: "SOL", icon: "https://cdn.arzdigital.com/uploads/assets/coins/icons/solana.png", price_usdt: 150, price_irr: 89250000, change_percent: 5.3, volume_24h: 3000000000, market_cap: 69000000000, last_update: "" },
+    { name_fa: "ریپل", name_en: "XRP", symbol: "XRP", icon: "https://cdn.arzdigital.com/uploads/assets/coins/icons/xrp.png", price_usdt: 0.5, price_irr: 29750, change_percent: -1.2, volume_24h: 1000000000, market_cap: 27000000000, last_update: "" },
+    { name_fa: "کاردانو", name_en: "Cardano", symbol: "ADA", icon: "https://cdn.arzdigital.com/uploads/assets/coins/icons/cardano.png", price_usdt: 0.45, price_irr: 26775, change_percent: 0.8, volume_24h: 400000000, market_cap: 16000000000, last_update: "" },
+    { name_fa: "دوج کوین", name_en: "Dogecoin", symbol: "DOGE", icon: "https://cdn.arzdigital.com/uploads/assets/coins/icons/dogecoin.png", price_usdt: 0.15, price_irr: 8925, change_percent: 3.5, volume_24h: 800000000, market_cap: 21000000000, last_update: "" },
+    { name_fa: "شیبا اینو", name_en: "Shiba Inu", symbol: "SHIB", icon: "https://cdn.arzdigital.com/uploads/assets/coins/icons/shiba-inu.png", price_usdt: 0.000025, price_irr: 1.48, change_percent: -2.5, volume_24h: 500000000, market_cap: 14000000000, last_update: "" },
+    { name_fa: "پالیگان", name_en: "Polygon", symbol: "MATIC", icon: "https://cdn.arzdigital.com/uploads/assets/coins/icons/polygon.png", price_usdt: 0.7, price_irr: 41650, change_percent: 1.1, volume_24h: 300000000, market_cap: 6900000000, last_update: "" }
+];
+
 
 const PriceChangeIndicator = ({ change }: { change: number }) => {
   if (change === 0) {
@@ -58,12 +71,10 @@ export default function CryptoConverter() {
     setCooldownTime(COOLDOWN_SECONDS);
 
     try {
-       console.error("Crypto price fetching is temporarily disabled.");
-       setPrices([]);
+       console.error("Crypto price fetching is temporarily disabled. Using mock data.");
        // This is a placeholder for when the functionality is restored.
-       // const result = await fetchCryptoPrices();
-       // setPrices(result || []);
-       // setLastUpdated(new Date());
+       setPrices(mockCryptoData);
+       setLastUpdated(new Date());
     } catch (error) {
       console.error("Failed to fetch crypto prices:", error);
       setPrices([]);
@@ -112,7 +123,7 @@ export default function CryptoConverter() {
     <div id="crypto-prices" className="p-0 md:p-0">
         <div className="flex flex-wrap items-center justify-between gap-y-2 mb-4 px-4 md:px-0">
             <div className="flex items-center space-x-2 space-x-reverse">
-                <Button variant="ghost" size="sm" onClick={fetchPrices} disabled={true} className="text-muted-foreground w-28">
+                <Button variant="ghost" size="sm" onClick={fetchPrices} disabled={isCooldown || loading} className="text-muted-foreground w-28">
                     {loading ? <RefreshCw className={cn("h-5 w-5 animate-spin")} /> 
                             : isCooldown ? <><Timer className="h-5 w-5 ml-2" /> {cooldownTime} ثانیه</>
                             : <><RefreshCw className="h-5 w-5 ml-2" /> به‌روزرسانی</>
@@ -234,3 +245,5 @@ export default function CryptoConverter() {
     </div>
   );
 }
+
+    

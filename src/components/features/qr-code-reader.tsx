@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -71,7 +72,7 @@ export default function QrCodeReader() {
     if (isScanning) {
         animationFrameRef.current = requestAnimationFrame(scanQrCode);
     }
-  }, [stopScan, toast, isScanning]);
+  }, [isScanning, stopScan, toast]);
   
    useEffect(() => {
     if (isScanning) {
@@ -110,14 +111,9 @@ export default function QrCodeReader() {
         if (videoRef.current) {
             videoRef.current.srcObject = stream;
             // Wait for video to load metadata before trying to scan
-            await new Promise((resolve) => {
-                if (videoRef.current) {
-                    videoRef.current.onloadedmetadata = () => {
-                        resolve(true);
-                    };
-                }
-            });
-            setIsScanning(true); // Start scanning only after video is ready
+            videoRef.current.onloadedmetadata = () => {
+                 setIsScanning(true); // Start scanning only after video is ready
+            };
         }
     } catch (err) {
         console.error("Camera access error:", err);

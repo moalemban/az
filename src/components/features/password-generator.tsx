@@ -109,8 +109,7 @@ export default function PasswordGenerator() {
 
 
   useEffect(() => {
-    generatePassword();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // We don't generate a password on initial load to avoid hydration issues with crypto
   }, [length, options]);
 
   useEffect(() => {
@@ -147,7 +146,7 @@ export default function PasswordGenerator() {
           readOnly
           value={password}
           className="h-14 text-lg text-center font-mono tracking-widest pr-24 pl-12"
-          placeholder="رمز شما اینجا ظاهر می‌شود..."
+          placeholder="برای تولید رمز، دکمه را بزنید"
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
             <Button variant="ghost" size="icon" onClick={generatePassword} className="text-muted-foreground hover:text-foreground">

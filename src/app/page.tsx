@@ -43,6 +43,8 @@ import Game2048 from '@/components/features/game-2048';
 import LotteryTool from '@/components/features/lottery-tool';
 import EscapeFromTheBill from '@/components/features/escape-from-the-bill';
 import InvoiceGenerator from '@/components/features/invoice-generator';
+import ColorConverter from '@/components/features/color-converter';
+import Base64Converter from '@/components/features/base64-converter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ScrollToTop from '@/components/layout/scroll-to-top';
 import type { LivePrice, PriceData } from '@/lib/types';
@@ -118,8 +120,8 @@ const toolCategories = [
       { id: 'number-to-words', title: 'عدد به حروف', icon: <SpellCheck className="h-8 w-8 text-amber-400" />, component: <NumberToWordsConverter /> },
       { id: 'number-system', title: 'تبدیل ارقام', icon: <Binary className="h-8 w-8 text-sky-400" />, component: <NumberSystemConverter /> },
       { id: 'binary-converter', title: 'متن و باینری', icon: <Binary className="h-8 w-8 text-cyan-400" />, component: <BinaryConverter /> },
-      { id: 'color-converter', title: 'مبدل رنگ (HEX, RGB, HSL)', icon: <Palette className="h-8 w-8 text-rose-400" />, isWip: true },
-      { id: 'base64-converter', title: 'Base64 (متن/فایل)', icon: <Hash className="h-8 w-8 text-violet-400" />, isWip: true },
+      { id: 'color-converter', title: 'مبدل رنگ (HEX, RGB, HSL)', icon: <Palette className="h-8 w-8 text-rose-400" />, component: <ColorConverter /> },
+      { id: 'base64-converter', title: 'Base64 (متن/فایل)', icon: <Hash className="h-8 w-8 text-violet-400" />, component: <Base64Converter /> },
     ]
   },
   {
@@ -503,3 +505,4 @@ export default async function Home() {
 
 
     
+

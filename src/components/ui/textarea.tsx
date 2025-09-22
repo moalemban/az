@@ -21,7 +21,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         )}
         ref={ref}
         minRows={props.minRows || 3}
-        {...props}
+        {...props as any}
       />
     )
   }

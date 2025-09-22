@@ -94,6 +94,28 @@ export default function OthelloGame() {
     });
     return { black, white };
   };
+  
+    const makeMove = (currentBoard: Board, move: [number, number], player: Player) => {
+      const [row, col] = move;
+      const newBoard = currentBoard.map(r => [...r]);
+      const piecesToFlip: [number, number][] = [];
+      const opp = player === 'black' ? 'white' : 'black';
+
+      for (const [dr, dc] of directions) {
+          let r = row + dr, c = col + dc;
+          const lineToFlip = [];
+          while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+              if (newBoard[r][c] === opp) lineToFlip.push([r, c]);
+              else if (newBoard[r][c] === player) { piecesToFlip.push(...lineToFlip); break; } 
+              else break;
+              r += dr; c += dc;
+          }
+      }
+      newBoard[row][col] = player;
+      piecesToFlip.forEach(([r, c]) => { newBoard[r][c] = player; });
+      return { newBoard };
+  }
+
 
   const checkGameOver = useCallback((boardState: Board) => {
     const blackMoves = getValidMoves(boardState, 'black');
@@ -114,7 +136,13 @@ export default function OthelloGame() {
   
   const makeComputerMove = useCallback(() => {
     const computerValidMoves = getValidMoves(board, 'white');
-    if (computerValidMoves.length === 0) return;
+    if (computerValidMoves.length === 0) {
+        // If computer has no moves, pass turn back to player
+        if(getValidMoves(board, 'black').length > 0) {
+            setCurrentPlayer('black');
+        }
+        return;
+    }
 
     let bestMove: [number, number] | null = null;
 
@@ -149,27 +177,7 @@ export default function OthelloGame() {
         makeComputerMove();
     }
   }, [currentPlayer, gameOver, gameMode, makeComputerMove]);
-  
-  const makeMove = (currentBoard: Board, move: [number, number], player: Player) => {
-      const [row, col] = move;
-      const newBoard = currentBoard.map(r => [...r]);
-      const piecesToFlip: [number, number][] = [];
-      const opp = player === 'black' ? 'white' : 'black';
 
-      for (const [dr, dc] of directions) {
-          let r = row + dr, c = col + dc;
-          const lineToFlip = [];
-          while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
-              if (newBoard[r][c] === opp) lineToFlip.push([r, c]);
-              else if (newBoard[r][c] === player) { piecesToFlip.push(...lineToFlip); break; } 
-              else break;
-              r += dr; c += dc;
-          }
-      }
-      newBoard[row][col] = player;
-      piecesToFlip.forEach(([r, c]) => { newBoard[r][c] = player; });
-      return { newBoard };
-  }
 
   const handleCellClick = (row: number, col: number) => {
     if (gameOver || !validMoves.some(([r, c]) => r === row && c === col)) return;

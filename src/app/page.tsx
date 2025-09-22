@@ -131,7 +131,7 @@ const toolCategories = [
       { id: 'age-calculator', title: 'محاسبه سن', icon: <Gift className="h-8 w-8 text-pink-400" />, component: <AgeCalculator /> },
       { id: 'stopwatch', title: 'کرونومتر', icon: <Clock className="h-8 w-8 text-indigo-400" />, component: <Stopwatch /> },
       { id: 'countdown-timer', title: 'تایمر شمارش معکوس', icon: <Hourglass className="h-8 w-8 text-blue-400" />, component: <CountdownTimer /> },
-      { id: 'events-calendar', title: 'تقویم مناسبت‌ها', icon: <CalendarCheck className="h-8 w-8 text-rose-400" />, isWip: true },
+      { id: 'events-calendar', title: 'تقویم مناسبت‌ها', icon: <CalendarCheck className="h-8 w-8 text-rose-400" />, isExternal: true, href: 'https://www.google.com/calendar/embed?src=fa.ir%23holiday%40group.v.calendar.google.com&ctz=Asia%2FTehran' },
     ]
   },
     {
@@ -505,4 +505,5 @@ export default async function Home() {
 
 
     
+
 

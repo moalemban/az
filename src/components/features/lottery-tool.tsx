@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Dices, RefreshCw, Trophy, Users, Copy, Trash2 } from 'lucide-react';
+import { Dices, Trophy, Users, Copy, Trash2 } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 
 const shuffleArray = (array: string[]) => {
@@ -68,14 +68,14 @@ export default function LotteryTool() {
 
   return (
     <CardContent className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
             <div className='flex justify-between items-center'>
                 <Label htmlFor="participants" className="text-muted-foreground flex items-center gap-2">
                     <Users className="w-4 h-4"/>
                     شرکت‌کنندگان (هر کدام در یک خط)
                 </Label>
-                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={handleClear} disabled={!participants}>
+                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={handleClear} disabled={!participants} title="پاک کردن لیست">
                     <Trash2 className="w-5 h-5"/>
                 </Button>
             </div>
@@ -87,17 +87,19 @@ export default function LotteryTool() {
                 className="min-h-[200px] text-base"
             />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="winner-count" className="text-muted-foreground">تعداد برنده‌ها</Label>
-          <Input
-            id="winner-count"
-            type="number"
-            value={winnerCount}
-            onChange={(e) => setWinnerCount(e.target.value)}
-            min="1"
-            className="h-14 text-2xl text-center font-display"
-          />
-           <Button onClick={handleDraw} className="w-full h-12 text-base mt-4">
+        <div className="space-y-4">
+          <div className="space-y-2">
+              <Label htmlFor="winner-count" className="text-muted-foreground">تعداد برنده‌ها</Label>
+              <Input
+                id="winner-count"
+                type="number"
+                value={winnerCount}
+                onChange={(e) => setWinnerCount(e.target.value)}
+                min="1"
+                className="h-14 text-2xl text-center font-display"
+              />
+          </div>
+           <Button onClick={handleDraw} className="w-full h-12 text-base">
             <Dices className="ml-2 h-5 w-5" />
             شروع قرعه‌کشی
           </Button>
@@ -110,7 +112,7 @@ export default function LotteryTool() {
                     <Trophy className="w-5 h-5 text-yellow-500" />
                     برنده‌ها
                 </Label>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={copyToClipboard} disabled={winners.length === 0}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={copyToClipboard} disabled={winners.length === 0} title="کپی کردن برنده‌ها">
                     <Copy className="w-5 h-5"/>
                 </Button>
             </div>
@@ -126,7 +128,7 @@ export default function LotteryTool() {
                     </ol>
                 ) : (
                     <div className="flex h-full items-center justify-center text-muted-foreground">
-                    <p>برنده‌ها اینجا نمایش داده می‌شوند.</p>
+                    <p>برای شروع، قرعه‌کشی را انجام دهید.</p>
                     </div>
                 )}
             </ScrollArea>

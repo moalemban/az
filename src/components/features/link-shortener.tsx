@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { shortenLink } from '@/ai/flows/shorten-link-flow';
 import { Loader2, Link as LinkIcon, Copy } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -35,24 +34,15 @@ export default function LinkShortener() {
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     setLoading(true);
     setShortUrl(null);
-
-    try {
-      const result = await shortenLink(data);
-      if (result.shortUrl) {
-        setShortUrl(result.shortUrl);
-        toast({ title: 'موفقیت!', description: 'لینک شما با موفقیت کوتاه شد.' });
-      } else {
-        throw new Error(result.error || 'خطای نامشخص در کوتاه کردن لینک.');
-      }
-    } catch (error: any) {
-      toast({
-        title: 'خطا',
-        description: error.message || 'مشکلی در ارتباط با سرویس رخ داد.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+    
+    setTimeout(() => {
+        setLoading(false);
+        toast({
+            title: 'سرویس غیرفعال است',
+            description: 'قابلیت کوتاه‌کننده لینک به طور موقت غیرفعال است.',
+            variant: 'destructive',
+        });
+    }, 1000);
   };
   
   const copyToClipboard = () => {

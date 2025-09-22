@@ -8,7 +8,6 @@ import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { legalFinancialChat } from '@/ai/flows/legal-financial-chat-flow';
 import { Loader2, User, Bot, Sparkles, Send } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -66,50 +65,20 @@ export default function LegalFinancialChatbot() {
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     setLoading(true);
     const userMessage: Message = { role: 'user', content: data.prompt };
-    const currentMessages = [...messages, userMessage];
-    setMessages(currentMessages);
+    setMessages(prev => [...prev, userMessage]);
     reset();
 
-    const botMessagePlaceholder: Message = { role: 'bot', content: '' };
-    setMessages(prev => [...prev, botMessagePlaceholder]);
-    
-    try {
-      const stream = await legalFinancialChat({
-          history: currentMessages.map(m => ({ role: m.role, content: m.content })),
-          prompt: data.prompt,
-      });
-      
-      const reader = stream.getReader();
-      const decoder = new TextDecoder();
-      let accumulatedResponse = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        accumulatedResponse += decoder.decode(value, { stream: true });
-        
-        setMessages(prev => {
-            const updatedMessages = [...prev];
-            const lastMessage = updatedMessages[updatedMessages.length - 1];
-            if (lastMessage && lastMessage.role === 'bot') {
-                 lastMessage.content = accumulatedResponse;
-            }
-            return updatedMessages;
+    // Simulate bot response since flow is disabled
+    setTimeout(() => {
+        const botMessage: Message = { role: 'bot', content: 'سرویس چت‌بات در حال حاضر در دسترس نیست. لطفاً بعداً تلاش کنید.' };
+        setMessages(prev => [...prev, botMessage]);
+        setLoading(false);
+        toast({
+            title: 'سرویس غیرفعال است',
+            description: 'قابلیت چت‌بات حقوقی و مالی به طور موقت غیرفعال است.',
+            variant: 'destructive'
         });
-      }
-
-    } catch (error: any) {
-      console.error(error);
-      toast({
-        title: 'خطا در ارتباط با چت‌بات',
-        description: error.message || 'مشکلی در ارتباط با سرور هوش مصنوعی به وجود آمد.',
-        variant: 'destructive',
-      });
-       setMessages(prev => prev.slice(0, -1)); // Remove bot placeholder on error
-    } finally {
-      setLoading(false);
-    }
+    }, 1000);
   };
 
   return (

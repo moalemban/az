@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { summarizeText } from '@/ai/flows/summarize-text-flow';
 import { Loader2, Wand2, Trash2, Copy, Sparkles, FileText, FileCheck } from 'lucide-react';
 import { ZodError } from 'zod';
 import { Progress } from '../ui/progress';
@@ -31,26 +30,21 @@ export default function TextSummarizer() {
           throw new Error(`متن برای خلاصه‌سازی باید حداقل ${MIN_CHARS} کاراکتر باشد.`);
       }
 
-      const stream = await summarizeText({ text: originalText });
-      
-      const reader = stream.getReader();
-      const decoder = new TextDecoder();
-      let accumulatedResponse = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        accumulatedResponse += decoder.decode(value, { stream: true });
-        setSummary(accumulatedResponse);
-      }
+      // Simulate API call since flow is disabled
+      setTimeout(() => {
+        setSummary('سرویس خلاصه‌ساز متن در حال حاضر در دسترس نیست. لطفاً بعداً تلاش کنید.');
+        setLoading(false);
+        toast({
+            title: 'سرویس غیرفعال است',
+            description: 'قابلیت خلاصه‌ساز به طور موقت غیرفعال است.',
+            variant: 'destructive'
+        });
+      }, 1000);
 
     } catch (error: any) {
       console.error(error);
       let description = 'مشکلی در ارتباط با سرور هوش مصنوعی به وجود آمد.';
-      if (error instanceof ZodError) {
-        description = error.errors[0].message;
-      } else if (error.message) {
+      if (error.message) {
         description = error.message;
       }
       toast({
@@ -58,8 +52,7 @@ export default function TextSummarizer() {
         description,
         variant: 'destructive',
       });
-    } finally {
-      setLoading(false);
+       setLoading(false);
     }
   };
 

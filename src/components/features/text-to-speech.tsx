@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
 import { Loader2, Voicemail, Copy, Sparkles, Download, Play } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -37,23 +36,14 @@ export default function TextToSpeech() {
     setLoading(true);
     setAudioDataUri(null);
 
-    try {
-      const result = await textToSpeech(data);
-      if (result.audioDataUri) {
-        setAudioDataUri(result.audioDataUri);
-        toast({ title: 'موفقیت!', description: 'متن شما با موفقیت به گفتار تبدیل شد.' });
-      } else {
-        throw new Error(result.error || 'خطای نامشخص در تبدیل متن به گفتار.');
-      }
-    } catch (error: any) {
-      toast({
-        title: 'خطا',
-        description: error.message || 'مشکلی در ارتباط با سرویس رخ داد.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+    setTimeout(() => {
+        setLoading(false);
+        toast({
+            title: 'سرویس غیرفعال است',
+            description: 'قابلیت تبدیل نوشتار به گفتار به طور موقت غیرفعال است.',
+            variant: 'destructive',
+        });
+    }, 1000);
   };
 
   const handleDownload = () => {

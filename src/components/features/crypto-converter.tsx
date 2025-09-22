@@ -60,6 +60,10 @@ export default function CryptoConverter() {
     try {
        console.error("Crypto price fetching is temporarily disabled.");
        setPrices([]);
+       // This is a placeholder for when the functionality is restored.
+       // const result = await fetchCryptoPrices();
+       // setPrices(result || []);
+       // setLastUpdated(new Date());
     } catch (error) {
       console.error("Failed to fetch crypto prices:", error);
       setPrices([]);

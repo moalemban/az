@@ -176,6 +176,7 @@ const toolCategories = [
       { id: 'word-hunt', title: 'Word Hunt Blitz', icon: <Search className="h-8 w-8 text-orange-500" />, isWip: true },
       { id: 'snake', title: 'مار نئونی', icon: <SnakeIcon />, isWip: true },
       { id: 'chess', title: 'شطرنج', icon: <Crown className="h-8 w-8 text-yellow-500" />, isWip: true },
+	  { id: 'breakout-neon', title: 'Breakout Neon', icon: <RectangleEllipsis className="h-8 w-8 text-orange-400" />, isWip: true },
     ]
   },
   {
@@ -468,6 +469,7 @@ export default async function Home() {
 }
 
     
+
 
 
 

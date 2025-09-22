@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CandlestickChart } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { fetchPrices } from '@/ai/flows/fetch-prices-flow';
 import type { PriceData } from '@/lib/types';
 
 
@@ -34,8 +33,9 @@ export default function LivePrices() {
     async function getPrices() {
       try {
         setLoading(true);
-        const fetchedPrices = await fetchPrices();
-        setPrices(fetchedPrices);
+        // AI Flow is disabled, using mock data for now.
+        // const fetchedPrices = await fetchPrices();
+        setPrices({});
       } catch (error) {
         console.error("Failed to fetch prices:", error);
         setPrices({}); // Set to empty object on error

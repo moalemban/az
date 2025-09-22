@@ -19,6 +19,13 @@ type InvoiceItem = {
   unitPrice: number;
 };
 
+type PartyInfo = {
+  name: string;
+  nationalId: string;
+  address: string;
+  phone: string;
+};
+
 const formatNumber = (num: number) => {
   if (isNaN(num)) return '';
   return num.toLocaleString('fa-IR');
@@ -32,7 +39,7 @@ const parseFormattedNumber = (str: string) => {
 };
 
 
-const PartyInput = ({ title, party, setParty }: { title: string, party: typeof seller, setParty: Function }) => (
+const PartyInput = ({ title, party, setParty }: { title: string, party: PartyInfo, setParty: (value: PartyInfo) => void }) => (
     <div className="space-y-3 glass-effect p-4 rounded-xl">
       <h4 className="font-semibold text-lg text-foreground/90 border-b pb-2">{title}</h4>
       <div className="space-y-2">
@@ -55,8 +62,8 @@ const PartyInput = ({ title, party, setParty }: { title: string, party: typeof s
   );
   
 export default function InvoiceGenerator() {
-  const [seller, setSeller] = useState({ name: '', nationalId: '', address: '', phone: '' });
-  const [buyer, setBuyer] = useState({ name: '', nationalId: '', address: '', phone: '' });
+  const [seller, setSeller] = useState<PartyInfo>({ name: '', nationalId: '', address: '', phone: '' });
+  const [buyer, setBuyer] = useState<PartyInfo>({ name: '', nationalId: '', address: '', phone: '' });
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [invoiceDate, setInvoiceDate] = useState(new Date().toLocaleDateString('fa-IR-u-nu-latn').replace(/\//g, '/'));
   const [items, setItems] = useState<InvoiceItem[]>([{ id: 1, description: '', quantity: 1, unitPrice: 0 }]);
@@ -271,3 +278,5 @@ export default function InvoiceGenerator() {
     </CardContent>
   );
 }
+
+    

@@ -6,15 +6,18 @@ import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Printer, FileText, Upload, Building, User, Wand2, Star, Share2, Settings, Briefcase, CreditCard, Send, TrendingUp, Archive, File, BrainCircuit } from 'lucide-react';
+import { Trash2, Plus, Printer, FileText, Upload, Building, User, Wand2, Star, Share2, Settings, Briefcase, CreditCard, Send, TrendingUp, Archive, File, BrainCircuit, Sun, Moon, Waves as WavesIcon } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import Image from 'next/image';
 import { Separator } from '../ui/separator';
 import { numToWords } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
-import { Textarea } from '../ui/textarea';
+import 'react-quill/dist/quill.snow.css';
+import dynamic from 'next/dynamic';
 
-type InvoiceTemplate = 'venus_official' | 'classic_simple';
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+
+type InvoiceTemplate = 'venus_official' | 'classic_simple' | 'galaxy' | 'ocean' | 'sunset';
 
 type InvoiceItem = {
   id: number;
@@ -39,7 +42,6 @@ const formatNumber = (num: number) => {
 
 const parseFormattedNumber = (str: string) => {
   if (!str) return 0;
-  // This regex handles both English and Persian numbers and removes commas
   const englishStr = str.replace(/[\u0660-\u0669]/g, c => String(c.charCodeAt(0) - 0x0660)).replace(/[\u06F0-\u06F9]/g, c => String(c.charCodeAt(0) - 0x06F0));
   return parseFloat(englishStr.replace(/,/g, ''));
 };
@@ -130,6 +132,8 @@ export default function InvoiceGenerator() {
                     th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
                     th { background-color: #f2f2f2; }
                     td:nth-child(2) {text-align: right;}
+                    .ql-editor { padding: 0 !important; }
+                    .ql-editor p, .ql-editor ol, .ql-editor ul, .ql-editor pre, .ql-editor blockquote, .ql-editor h1, .ql-editor h2, .ql-editor h3, .ql-editor h4, .ql-editor h5, .ql-editor h6 { margin: 0 !important; }
 
                     /* Venus Template Styles */
                     .venus-header-print { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 10px; }
@@ -224,7 +228,7 @@ export default function InvoiceGenerator() {
           <p><strong>شماره فاکتور:</strong> <span className='font-mono'>{invoiceNumber || '---'}</span></p>
         </div>
       </div>
-      <div className="h-1 bg-primary w-full my-2"></div>
+      <div className="h-1 bg-primary w-full my-2" style={{ backgroundColor: '#6A3EAB' }}></div>
       <div className="venus-buyer-info-print text-xs">
         <span><strong>خریدار:</strong> {buyer.name || '---'}</span>
         <span><strong>موبایل/تلفن:</strong> {buyer.phone || '---'}</span>
@@ -262,9 +266,9 @@ export default function InvoiceGenerator() {
         </TableBody>
       </Table>
       <div className="venus-totals-container-print">
-        <div>
-          <p className='font-bold text-xs'>توضیحات:</p>
-          <p className='text-xs text-gray-600'>{description || 'ندارد'}</p>
+         <div className='text-xs text-gray-600 w-1/2'>
+            <p className='font-bold text-xs text-black'>توضیحات:</p>
+            <div className="ql-editor" dangerouslySetInnerHTML={{ __html: description || 'ندارد' }} />
         </div>
         <div className="venus-calc-section-print">
           <div><span>مجموع:</span><span className="font-mono">{formatNumber(subtotal)}</span></div>
@@ -292,7 +296,7 @@ export default function InvoiceGenerator() {
         <div className='classic-header'>
             {logo && <Image src={logo} alt="لوگو" width={80} height={80} className="mx-auto mb-2 object-contain" />}
             <h2 className="text-xl font-bold">{seller.name || 'نام فروشنده'}</h2>
-            <p className="text-sm">{description || 'فاکتور فروش کالا و خدمات'}</p>
+            <div className="text-sm ql-editor" dangerouslySetInnerHTML={{ __html: description || 'فاکتور فروش کالا و خدمات' }} />
         </div>
          <div className="classic-info-section">
             <div className='classic-party-info space-y-1'>
@@ -348,6 +352,107 @@ export default function InvoiceGenerator() {
          </div>
      </div>
   );
+
+  const renderGalaxyPreview = () => (
+    <div className='bg-gray-900 text-white p-4 rounded-lg shadow-lg border border-purple-500/30' style={{ fontFamily: 'Vazirmatn' }}>
+        <div className="flex justify-between items-start pb-2 border-b-2 border-purple-400">
+            <div className="text-left space-y-1">
+                <h2 className="font-bold text-2xl text-purple-400">فاکتور</h2>
+                <p className="text-xs text-gray-400 font-mono">{invoiceNumber || '---'}</p>
+            </div>
+            <div className="text-right space-y-1 text-xs">
+                {logo ? <Image src={logo} alt="Logo" width={50} height={50} className='object-contain rounded-full bg-white/10 p-1' /> : 
+                <div className="w-12 h-12 border-2 border-dashed border-purple-400/50 rounded-full flex items-center justify-center text-gray-500 text-xs">لوگو</div>}
+            </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 my-4 text-xs">
+            <div className='space-y-1'>
+                <p className='text-gray-400'>از طرف:</p>
+                <p className='font-bold'>{seller.name}</p>
+                <p>{seller.address}</p>
+                <p>{seller.phone}</p>
+            </div>
+            <div className='space-y-1 text-left'>
+                <p className='text-gray-400'>به:</p>
+                <p className='font-bold'>{buyer.name}</p>
+                <p>{buyer.address}</p>
+                <p>{buyer.phone}</p>
+            </div>
+        </div>
+        <Table className='text-xs text-white'>
+            <TableHeader><TableRow className='border-gray-700'><TableHead>شرح</TableHead><TableHead>تعداد</TableHead><TableHead>قیمت واحد</TableHead><TableHead>جمع</TableHead></TableRow></TableHeader>
+            <TableBody>{items.map((item, index) => (<TableRow key={item.id} className='border-gray-800'><TableCell className='text-right'>{item.description}</TableCell><TableCell>{formatNumber(item.quantity)}</TableCell><TableCell>{formatNumber(item.unitPrice)}</TableCell><TableCell>{formatNumber(item.quantity * item.unitPrice)}</TableCell></TableRow>))}</TableBody>
+        </Table>
+        <div className="flex justify-end mt-4">
+            <div className="w-1/2 space-y-2 text-xs">
+                <div className="flex justify-between"><span className='text-gray-400'>جمع کل:</span><span>{formatNumber(subtotal)}</span></div>
+                <div className="flex justify-between"><span className='text-gray-400'>تخفیف:</span><span>{formatNumber(totalDiscount)}</span></div>
+                {taxRate > 0 && <div className="flex justify-between"><span className='text-gray-400'>مالیات ({formatNumber(taxRate)}%):</span><span>{formatNumber(taxAmount)}</span></div>}
+                <Separator className='bg-purple-400/50 my-1'/>
+                <div className="flex justify-between font-bold text-base"><span className=''>مبلغ نهایی:</span><span className='text-purple-400'>{formatNumber(grandTotal)}</span></div>
+            </div>
+        </div>
+         <div className="mt-8 text-xs text-gray-400 ql-editor" dangerouslySetInnerHTML={{ __html: description }} />
+    </div>
+  );
+
+  const renderOceanPreview = () => (
+    <div className='bg-blue-50 text-gray-800 p-4 rounded-lg shadow-lg border'>
+        <div className="flex justify-between items-center pb-2">
+             <div className="text-right space-y-1">
+                {logo ? <Image src={logo} alt="Logo" width={60} height={60} className='object-contain' /> : 
+                <div className="w-16 h-16 border-2 border-dashed flex items-center justify-center text-gray-500 text-xs">لوگو</div>}
+            </div>
+            <div className="text-left space-y-1">
+                <h2 className="font-bold text-3xl text-blue-700">فاکتور</h2>
+                <p className="text-xs text-gray-500">شماره: <span className='font-mono'>{invoiceNumber || '---'}</span></p>
+                <p className="text-xs text-gray-500">تاریخ: {invoiceDate || '---'}</p>
+            </div>
+        </div>
+        <div className="my-4 p-3 bg-white rounded-lg grid grid-cols-2 gap-4 text-xs border">
+            <div><p className='font-bold'>فروشنده:</p><p>{seller.name}</p><p>{seller.address}</p></div>
+            <div><p className='font-bold'>خریدار:</p><p>{buyer.name}</p><p>{buyer.address}</p></div>
+        </div>
+        <Table className='text-xs bg-white rounded-lg'>
+            <TableHeader><TableRow><TableHead className='text-blue-800'>شرح</TableHead><TableHead className='text-blue-800'>تعداد</TableHead><TableHead className='text-blue-800'>قیمت</TableHead><TableHead className='text-blue-800'>جمع کل</TableHead></TableRow></TableHeader>
+            <TableBody>{items.map((item, index) => (<TableRow key={item.id}><TableCell className='text-right'>{item.description}</TableCell><TableCell>{formatNumber(item.quantity)}</TableCell><TableCell>{formatNumber(item.unitPrice)}</TableCell><TableCell>{formatNumber(item.quantity * item.unitPrice)}</TableCell></TableRow>))}</TableBody>
+            <TableFooter className='bg-blue-100/50'>
+                <TableRow><TableCell colSpan={3} className='text-right font-bold'>جمع کل</TableCell><TableCell className='font-bold'>{formatNumber(grandTotal)}</TableCell></TableRow>
+            </TableFooter>
+        </Table>
+         <div className="mt-4 text-xs text-gray-600 ql-editor" dangerouslySetInnerHTML={{ __html: description }} />
+    </div>
+  );
+
+  const renderSunsetPreview = () => (
+    <div className='bg-white text-gray-800 p-4 rounded-lg shadow-lg border-t-4 border-orange-500'>
+        <div className="flex justify-between items-center pb-2">
+            <div className="text-right space-y-1">
+                <h2 className="font-bold text-2xl">{seller.name}</h2>
+                <p className="text-xs text-gray-500">{seller.address}</p>
+            </div>
+            <div className="text-left space-y-1">
+                {logo && <Image src={logo} alt="Logo" width={50} height={50} className='object-contain rounded-full' />}
+            </div>
+        </div>
+        <Separator className='my-4'/>
+        <div className="grid grid-cols-2 gap-4 my-4 text-xs">
+            <div><p className='font-bold'>فاکتور برای:</p><p>{buyer.name}</p></div>
+            <div className='text-left'><p>شماره فاکتور: {invoiceNumber}</p><p>تاریخ: {invoiceDate}</p></div>
+        </div>
+        <Table className='text-xs'>
+            <TableHeader className='bg-orange-100/70'><TableRow><TableHead>شرح</TableHead><TableHead>تعداد</TableHead><TableHead>قیمت واحد</TableHead><TableHead>جمع</TableHead></TableRow></TableHeader>
+            <TableBody>{items.map((item, index) => (<TableRow key={item.id} className='border-orange-100'><TableCell className='text-right'>{item.description}</TableCell><TableCell>{formatNumber(item.quantity)}</TableCell><TableCell>{formatNumber(item.unitPrice)}</TableCell><TableCell>{formatNumber(item.quantity * item.unitPrice)}</TableCell></TableRow>))}</TableBody>
+        </Table>
+        <div className='flex justify-end mt-4'><div className='w-1/2 p-4 bg-orange-50 rounded-lg space-y-2 text-sm'>
+            <div className='flex justify-between'><span>جمع:</span><span>{formatNumber(subtotal)}</span></div>
+            <div className='flex justify-between text-red-600'><span>تخفیف:</span><span>{formatNumber(totalDiscount)}</span></div>
+            <Separator />
+            <div className='flex justify-between font-bold text-base'><span>مبلغ نهایی:</span><span>{formatNumber(grandTotal)}</span></div>
+        </div></div>
+         <div className="mt-6 text-center text-xs text-gray-500 ql-editor" dangerouslySetInnerHTML={{ __html: description }} />
+    </div>
+  );
   
   const FileInputCard = ({ title, description, onFileChange, inputRef }: { title: string, description: string, onFileChange: (e: ChangeEvent<HTMLInputElement>) => void, inputRef: React.RefObject<HTMLInputElement> }) => (
     <div 
@@ -365,11 +470,18 @@ export default function InvoiceGenerator() {
     </div>
  );
 
+ const quillModules = {
+    toolbar: [
+      ['bold', 'italic', 'underline', 'strike'],
+      [{'list': 'ordered'}, {'list': 'bullet'}],
+      ['link'],
+      ['clean']
+    ],
+  };
 
   return (
     <CardContent className="space-y-6">
         <div className="grid lg:grid-cols-[1fr,450px] gap-8 items-start">
-            {/* Left Side: Inputs */}
             <div className="space-y-6 no-print">
                 <div className="flex justify-between items-center">
                     <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
@@ -414,9 +526,9 @@ export default function InvoiceGenerator() {
                               <Label>مالیات بر ارزش افزوده (%)</Label>
                               <Input type="number" value={taxRate} onChange={e => setTaxRate(parseFloat(e.target.value) || 0)} className="text-center"/>
                             </div>
-                            <div className="space-y-1">
+                            <div className="space-y-2">
                                 <Label>توضیحات</Label>
-                                <Textarea placeholder="توضیحات اضافی فاکتور" value={description} onChange={e => setDescription(e.target.value)} />
+                                <ReactQuill theme="snow" value={description} onChange={setDescription} modules={quillModules} className='bg-background rounded-lg'/>
                             </div>
                              <div className="grid sm:grid-cols-2 gap-4">
                                 <FileInputCard title="لوگو" description="در صورت داشتن لوگو می توانید در این بخش وارد نمایید" onFileChange={handleFileUpload(setLogo)} inputRef={logoInputRef} />
@@ -434,7 +546,7 @@ export default function InvoiceGenerator() {
                         <FeatureCard icon={<CreditCard className="w-6 h-6"/>} title="پرداخت آنلاین فاکتور" description="اتصال به درگاه پرداخت مستقیم و واسط" />
                         <FeatureCard icon={<Archive className="w-6 h-6"/>} title="سوابق فاکتورها" description="مشاهده و ذخیره تمام فاکتور های قبلی" />
                         <FeatureCard icon={<BrainCircuit className="w-6 h-6"/>} title="فرمول نویسی و محاسبه‌گر" description="محاسبه هزینه و تخفیف ‌های فاکتور" />
-                        <FeatureCard icon={<TrendingUp className="w-6 h-6"/>} title="گزارش‌گیری آماری" description="گزارش‌گیری فروش هر کالا و خدمات" />
+                        <FeatureCard icon={<TrendingUp className="w-6 h-6"/>} title="گزارش گیری و نمودارهای آماری" description="گزارش‌گیری فروش هر کالا و خدمات" />
                         <FeatureCard icon={<File className="w-6 h-6"/>} title="طراحی قالب دلخواه" description="شخصی سازی ورودی‌های فاکتور" />
                         <FeatureCard icon={<Star className="w-6 h-6"/>} title="امضای دیجیتال" description="دریافت امضای دیجیتال فروشنده و خریدار" />
                         <FeatureCard icon={<Send className="w-6 h-6"/>} title="ارسال پیامک و ایمیل" description="ارسال اطلاعات فاکتور از طریق ایمیل و پیامک" />
@@ -443,17 +555,27 @@ export default function InvoiceGenerator() {
                 </div>
             </div>
             
-            {/* Right Side: Preview */}
             <div className='space-y-4 lg:sticky top-24'>
-                 <div className="flex items-center justify-center p-1 bg-muted rounded-lg w-full">
-                    <Button onClick={() => setTemplate('venus_official')} variant={template === 'venus_official' ? 'default' : 'ghost'} className="w-full">قالب ونوس (رسمی)</Button>
-                    <Button onClick={() => setTemplate('classic_simple')} variant={template === 'classic_simple' ? 'default' : 'ghost'} className="w-full">قالب کلاسیک (ساده)</Button>
+                 <div className="flex items-center justify-center p-1 bg-muted rounded-lg w-full flex-wrap">
+                    <Button onClick={() => setTemplate('venus_official')} variant={template === 'venus_official' ? 'default' : 'ghost'} className="flex-1 text-xs sm:text-sm">ونوس (رسمی)</Button>
+                    <Button onClick={() => setTemplate('classic_simple')} variant={template === 'classic_simple' ? 'default' : 'ghost'} className="flex-1 text-xs sm:text-sm">کلاسیک</Button>
+                    <Button onClick={() => setTemplate('galaxy')} variant={template === 'galaxy' ? 'default' : 'ghost'} className="flex-1 text-xs sm:text-sm">کهکشان</Button>
+                    <Button onClick={() => setTemplate('ocean')} variant={template === 'ocean' ? 'default' : 'ghost'} className="flex-1 text-xs sm:text-sm">اقیانوس</Button>
+                    <Button onClick={() => setTemplate('sunset')} variant={template === 'sunset' ? 'default' : 'ghost'} className="flex-1 text-xs sm:text-sm">آفتاب</Button>
                  </div>
                  <div ref={printRef} className='hidden print:block'>
-                   {template === 'venus_official' ? renderVenusPreview() : renderClassicPreview()}
+                   {template === 'venus_official' && renderVenusPreview()}
+                   {template === 'classic_simple' && renderClassicPreview()}
+                   {template === 'galaxy' && renderGalaxyPreview()}
+                   {template === 'ocean' && renderOceanPreview()}
+                   {template === 'sunset' && renderSunsetPreview()}
                 </div>
                  <div className='hidden lg:block'>
-                   {template === 'venus_official' ? renderVenusPreview() : renderClassicPreview()}
+                   {template === 'venus_official' && renderVenusPreview()}
+                   {template === 'classic_simple' && renderClassicPreview()}
+                   {template === 'galaxy' && renderGalaxyPreview()}
+                   {template === 'ocean' && renderOceanPreview()}
+                   {template === 'sunset' && renderSunsetPreview()}
                 </div>
                  <Button onClick={handlePrint} className="w-full h-12 text-lg no-print"><Printer className="w-5 h-5 ml-2"/> چاپ یا دریافت PDF</Button>
             </div>

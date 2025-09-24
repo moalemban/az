@@ -82,7 +82,7 @@ export default function EventsCalendar() {
   const DayContent: React.FC<React.ComponentProps<typeof Calendar>['components']['DayContent']> = (props) => {
       const isHoliday = eventDays.isHoliday.some(d => d.getTime() === props.date.getTime());
       const hasEvent = eventDays.hasEvent.some(d => d.getTime() === props.date.getTime());
-      const numberFormatter = new Intl.NumberFormat(calendarSystem === 'shamsi' ? 'fa-IR' : 'en-US');
+      const numberFormatter = new Intl.NumberFormat(calendarSystem === 'shamsi' ? 'fa-IR' : 'en-US', {useGrouping: false});
 
       return (
           <div className='relative'>

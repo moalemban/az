@@ -6,22 +6,26 @@ export * from './banks';
  * Validates an IBAN using the ISO 13616 standard (mod-97).
  */
 export function validateIBAN(iban: string): boolean {
-  const clean = iban.toUpperCase().replace(/\s+/g, "");
-  if (!/^IR\d{24}$/.test(clean)) return false;
-
-  // Move the first 4 characters to the end
-  const rearranged = clean.slice(4) + clean.slice(0, 4);
-
-  // Replace letters with numbers (A=10, B=11, ..., Z=35)
-  const expanded = rearranged.replace(/[A-Z]/g, ch => (ch.charCodeAt(0) - 55).toString());
-
-  // Perform mod-97 check on the potentially very large number
-    let remainder = 0;
-    for (let i = 0; i < expanded.length; i++) {
-        remainder = (remainder * 10 + parseInt(expanded[i], 10)) % 97;
-    }
+  const cleanIban = iban.replace(/\s+/g, '').toUpperCase();
+  if (!/^IR\d{24}$/.test(cleanIban)) {
+    return false;
+  }
   
-  return remainder === 1;
+  const moved = cleanIban.slice(4) + cleanIban.slice(0, 4)
+    .replace('I', '18')
+    .replace('R', '27');
+  
+  try {
+    const rem = BigInt(moved) % 97n;
+    return rem === 1n;
+  } catch (e) {
+    // Fallback for environments that might not support BigInt with very long strings
+    let remainder = 0;
+    for (let i = 0; i < moved.length; i++) {
+        remainder = (remainder * 10 + parseInt(moved[i], 10)) % 97;
+    }
+    return remainder === 1;
+  }
 }
 
 
@@ -39,10 +43,9 @@ export function shebaToAccountNumber(sheba: string): ShebaInfo {
   const cleanSheba = sheba.toUpperCase().replace(/IR|\s+/g, "");
   
   if (cleanSheba.length !== 24) throw new Error("شماره شبا باید 24 رقم باشد.");
-  if (!/^\d+$/.test(cleanSheba)) throw new Error("شماره شبا فقط باید شامل عدد باشد.");
   
   const fullIBAN = "IR" + cleanSheba;
-  if (!validateIBAN(fullIBAN)) throw new Error("شماره شبا نامعتبر است (رقم کنترلی اشتباه است).");
+  if (!validateIBAN(fullIBAN)) throw new Error("شماره شبا نامعتبر است (ساختار یا رقم کنترلی اشتباه است).");
 
   const bankCode = cleanSheba.slice(2, 5);
   const rawAccount = cleanSheba.slice(5);
@@ -77,7 +80,7 @@ export function accountNumberToSheba(accountNumber: string, bankCode: string): s
 
     const cleanAccountNumber = accountNumber.replace(/\D/g, ''); // Remove non-digits
     
-    // Pad the account number based on bank's format length
+    // Pad the account number based on bank's format length (defaulting to 19)
     const paddedAccountNumber = cleanAccountNumber.padStart(bank.shebaFormatLength || 19, '0');
 
     if (paddedAccountNumber.length > (bank.shebaFormatLength || 19)) {
@@ -88,13 +91,17 @@ export function accountNumberToSheba(accountNumber: string, bankCode: string): s
     const preliminaryIBAN = `${bankCode}${paddedAccountNumber}182700`;
 
     // Calculate check digits using mod-97 on the large number
-    let remainder = 0;
-    for (let i = 0; i < preliminaryIBAN.length; i++) {
-        remainder = (remainder * 10 + parseInt(preliminaryIBAN[i], 10)) % 97;
+    try {
+        const rem = BigInt(preliminaryIBAN) % 97n;
+        const checkDigits = (98n - rem).toString().padStart(2, '0');
+        return `IR${checkDigits}${bankCode}${paddedAccountNumber}`;
+    } catch(e) {
+         let remainder = 0;
+        for (let i = 0; i < preliminaryIBAN.length; i++) {
+            remainder = (remainder * 10 + parseInt(preliminaryIBAN[i], 10)) % 97;
+        }
+        const checkDigits = 98 - remainder;
+        const finalCheckDigits = String(checkDigits).padStart(2, '0');
+        return `IR${finalCheckDigits}${bankCode}${paddedAccountNumber}`;
     }
-    
-    const checkDigits = 98 - remainder;
-    const finalCheckDigits = String(checkDigits).padStart(2, '0');
-
-    return `IR${finalCheckDigits}${bankCode}${paddedAccountNumber}`;
 }

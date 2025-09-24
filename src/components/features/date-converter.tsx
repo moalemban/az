@@ -31,7 +31,7 @@ export default function DateConverter() {
 
   useEffect(() => {
     // Dynamically load the locale to avoid SSR issues
-    import('date-fns/locale/en-US').then(locale => setEnUSLocale(locale));
+    import('date-fns/locale/en-US').then(locale => setEnUSLocale(locale.default));
     
     // Set initial dates only on the client-side to avoid hydration mismatch
     const today = new Date();
@@ -54,7 +54,11 @@ export default function DateConverter() {
           const { gy, gm, gd } = jalaliToGregorian(shamsiYear, shamsiMonth, shamsiDay);
           const converted = new Date(gy, gm - 1, gd);
           const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(converted);
-          setConvertedDate(format(converted, 'PPP'));
+          if (enUSLocale) {
+            setConvertedDate(format(converted, 'PPP', { locale: enUSLocale }));
+          } else {
+            setConvertedDate(format(converted, 'PPP'));
+          }
           setConvertedWeekday(weekday);
         } else {
             setConvertedDate('تاریخ شمسی را کامل وارد کنید');
@@ -70,7 +74,7 @@ export default function DateConverter() {
   useEffect(() => {
     performConversion();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, gregorianDate, shamsiYear, shamsiMonth, shamsiDay]);
+  }, [mode, gregorianDate, shamsiYear, shamsiMonth, shamsiDay, enUSLocale]);
 
 
   const handleDateSelect = (d: Date | undefined) => {
@@ -94,7 +98,7 @@ export default function DateConverter() {
                   <PopoverTrigger asChild>
                     <Button variant={'outline'} className={cn('w-full justify-start text-left font-normal h-12 text-base', !gregorianDate && 'text-muted-foreground')} >
                       <CalendarIcon className="ml-2 h-5 w-5" />
-                      {gregorianDate ? format(gregorianDate, 'PPP') : <span>یک تاریخ انتخاب کنید</span>}
+                      {gregorianDate && enUSLocale ? format(gregorianDate, 'PPP', { locale: enUSLocale }) : <span>یک تاریخ انتخاب کنید</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 glass-effect" align="start">

@@ -13,6 +13,7 @@ import ImageNext from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import PWAInstallPrompt from '@/components/layout/pwa-install-prompt';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const LoadingComponent = () => (
     <div className="flex items-center justify-center p-8 text-muted-foreground">
@@ -337,6 +338,26 @@ export default function Home() {
                         </a>
                       )
                     }
+
+                    if (tool.id === 'invoice-generator') {
+                      return (
+                        <Accordion type="single" collapsible key={tool.id} id={tool.id} className="glass-effect rounded-2xl border-none scroll-mt-24">
+                          <AccordionItem value="item-1" className="border-b-0">
+                            <AccordionTrigger className="hover:no-underline p-6">
+                               <CardTitle className='flex items-center justify-between text-xl font-display w-full'>
+                                  <div className='flex items-center gap-3'>
+                                   {React.cloneElement(tool.icon as React.ReactElement, { className: "h-7 w-7" })}
+                                   {tool.title}
+                                 </div>
+                               </CardTitle>
+                            </AccordionTrigger>
+                            <AccordionContent>
+                              <InvoiceGenerator />
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
+                      )
+                    }
                     // Here we render the dynamically imported component
                     const ToolComponent = typedTool.component;
                     return (
@@ -526,10 +547,4 @@ export default function Home() {
     
 
 
-
-
-
-
-
-
-
+  

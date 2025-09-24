@@ -2,20 +2,44 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import type { Locale } from 'date-fns';
+import { add, format, getYear } from 'date-fns';
 import { enUS, faIR } from 'date-fns/locale';
 import { CardContent } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
+import { DayPicker, DayContentProps, CaptionProps } from 'react-day-picker';
 import { gregorianToJalali, jalaliToGregorian } from '@/lib/date-converter';
 import { events as allEvents } from '@/lib/events';
 import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
-import { CalendarCheck, Info, Moon, Sun, Calendar as CalendarIcon } from 'lucide-react';
+import { CalendarCheck, Info, Moon, Sun, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import 'react-day-picker/dist/style.css';
 import { cn } from '@/lib/utils';
-import { DayPicker, DayContentProps } from 'react-day-picker';
+
 
 type CalendarSystem = 'shamsi' | 'gregorian';
+
+function CustomCaption(props: CaptionProps) {
+  const { goToMonth, nextMonth, previousMonth } = props;
+  const isShamsi = props.locale?.code === 'fa-IR';
+
+  const monthName = format(props.displayMonth, 'LLLL', { locale: props.locale });
+  const year = format(props.displayMonth, 'yyyy', { locale: props.locale });
+
+  return (
+    <div className="flex items-center justify-between px-2 pb-2">
+      <Button variant="outline" size="icon" className="h-8 w-8" disabled={!previousMonth} onClick={() => previousMonth && goToMonth(previousMonth)}>
+        <ChevronRight className="w-5 h-5"/>
+      </Button>
+      <div className="text-lg font-semibold text-foreground">
+        {monthName} {year}
+      </div>
+      <Button variant="outline" size="icon" className="h-8 w-8" disabled={!nextMonth} onClick={() => nextMonth && goToMonth(nextMonth)}>
+        <ChevronLeft className="w-5 h-5"/>
+      </Button>
+    </div>
+  );
+}
+
 
 export default function EventsCalendar() {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -44,7 +68,7 @@ export default function EventsCalendar() {
           isHoliday: [],
       };
       
-      const referenceYear = date?.getFullYear() || new Date().getFullYear();
+      const referenceYear = date ? getYear(date) : getYear(new Date());
       
       [-1, 0, 1].forEach(yearOffset => {
           const yearToProcess = referenceYear + yearOffset;
@@ -67,11 +91,12 @@ export default function EventsCalendar() {
   
   const selectedDatePersian = useMemo(() => {
     if (!date) return '';
-    return new Intl.DateTimeFormat('fa-IR-u-nu-latn', {
+    return new Intl.DateTimeFormat('fa-IR', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
-        weekday: 'long'
+        weekday: 'long',
+        calendar: 'persian'
     }).format(date);
   }, [date]);
 
@@ -81,14 +106,16 @@ export default function EventsCalendar() {
     }
   };
   
-  const DayContentWithEvents: React.FC<DayContentProps> = (props) => {
+  const DayContentWithEvents = (props: DayContentProps) => {
       const isHoliday = eventDays.isHoliday.some(d => d.getTime() === props.date.getTime());
       const hasEvent = eventDays.hasEvent.some(d => d.getTime() === props.date.getTime());
-      const numberFormatter = new Intl.NumberFormat(calendarSystem === 'shamsi' ? 'fa-IR' : 'en-US', {useGrouping: false});
+      const numberFormatter = new Intl.NumberFormat(props.locale?.code, { useGrouping: false });
       
+      const day = props.locale?.code === 'fa-IR' ? gregorianToJalali(props.date).jd : props.date.getDate();
+
       return (
           <div className='relative w-full h-full flex items-center justify-center'>
-              <span>{numberFormatter.format(props.date.getDate())}</span>
+              <span>{numberFormatter.format(day)}</span>
               {hasEvent && <span className={cn(
                   "absolute bottom-1 w-1.5 h-1.5 rounded-full",
                    isHoliday ? 'bg-red-500' : 'bg-primary'
@@ -97,6 +124,10 @@ export default function EventsCalendar() {
       )
   }
 
+  const formatWeekdayName = (day: Date, options?: { locale?: Locale }) => {
+    return format(day, 'E', { locale: options?.locale }).charAt(0);
+  };
+
   return (
     <CardContent className="flex flex-col md:flex-row gap-6 items-start justify-center">
         <div className="w-full md:w-auto flex flex-col items-center gap-4">
@@ -104,7 +135,7 @@ export default function EventsCalendar() {
                 <Button onClick={() => setCalendarSystem('shamsi')} variant={calendarSystem === 'shamsi' ? 'default' : 'ghost'} className="flex-1 gap-2"><Sun className="w-4 h-4"/> شمسی</Button>
                 <Button onClick={() => setCalendarSystem('gregorian')} variant={calendarSystem === 'gregorian' ? 'default' : 'ghost'} className="flex-1 gap-2"><CalendarIcon className="w-4 h-4"/> میلادی</Button>
             </div>
-            <Calendar
+            <DayPicker
                 mode="single"
                 selected={date}
                 onSelect={handleDateSelect}
@@ -113,16 +144,27 @@ export default function EventsCalendar() {
                 locale={calendarSystem === 'shamsi' ? faIR : enUS}
                 modifiers={{
                     ...eventDays,
-                    friday: { dayOfWeek: [5] } // In date-fns, Friday is 5 (if week starts on Sunday)
+                    friday: { dayOfWeek: [5] }
                 }}
                 modifiersClassNames={{
                     isHoliday: 'day-holiday',
                     friday: 'day-holiday',
                 }}
-                components={{ DayContent: DayContentWithEvents }}
-                captionLayout="dropdown-buttons"
-                fromYear={1970}
-                toYear={new Date().getFullYear() + 2}
+                components={{ 
+                    Caption: CustomCaption,
+                    DayContent: DayContentWithEvents
+                }}
+                formatters={{ formatWeekdayName }}
+                classNames={{
+                     head_cell: "w-9 text-muted-foreground font-normal text-[0.8rem]",
+                     cell: "h-9 w-9 text-center text-sm p-0 relative",
+                     day: cn(
+                        buttonVariants({ variant: "ghost" }),
+                        "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
+                     ),
+                     day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                }}
+                showOutsideDays
             />
         </div>
       
@@ -133,7 +175,7 @@ export default function EventsCalendar() {
                 <ul className="space-y-3">
                     {eventsForSelectedDay.map((event, index) => (
                         <li key={index} className="flex items-start gap-3">
-                           <div className={`w-2 h-2 mt-2 rounded-full ${event.isHoliday ? 'bg-red-500' : 'bg-primary'}`} />
+                           <div className={cn("w-2 h-2 mt-2 rounded-full", event.isHoliday ? 'bg-red-500' : 'bg-primary')} />
                            <div className="flex-grow">
                              <p className="font-semibold text-foreground">{event.title}</p>
                              {event.isHoliday && <Badge variant="destructive" className="mt-1">تعطیل رسمی</Badge>}

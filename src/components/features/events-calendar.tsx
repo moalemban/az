@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
+import type { Locale } from 'date-fns';
 import { CardContent } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { gregorianToJalali, jalaliToGregorian } from '@/lib/date-converter';
@@ -9,7 +10,6 @@ import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
 import { CalendarCheck, Info, Moon, Sun, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '../ui/button';
-import { cn } from '@/lib/utils';
 import 'react-day-picker/dist/style.css';
 
 type CalendarSystem = 'shamsi' | 'gregorian' | 'hijri';
@@ -17,6 +17,20 @@ type CalendarSystem = 'shamsi' | 'gregorian' | 'hijri';
 export default function EventsCalendar() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [calendarSystem, setCalendarSystem] = useState<CalendarSystem>('shamsi');
+  const [locale, setLocale] = useState<Locale | undefined>(undefined);
+
+  useEffect(() => {
+    async function loadLocale() {
+      if (calendarSystem === 'shamsi') {
+        const faIR = await import('date-fns/locale/fa-IR');
+        setLocale(faIR);
+      } else {
+        const enUS = await import('date-fns/locale/en-US');
+        setLocale(enUS);
+      }
+    }
+    loadLocale();
+  }, [calendarSystem]);
   
   useEffect(() => {
     setDate(new Date());
@@ -43,7 +57,6 @@ export default function EventsCalendar() {
       
       const referenceYear = date?.getFullYear() || new Date().getFullYear();
       
-      // Show events for a 3-year window (+/- 1 year) to ensure visibility when navigating months
       [-1, 0, 1].forEach(yearOffset => {
           const yearToProcess = referenceYear + yearOffset;
            allEvents.forEach(event => {
@@ -92,6 +105,14 @@ export default function EventsCalendar() {
       )
   }
 
+  if (!locale) {
+    return (
+      <CardContent className="flex items-center justify-center h-96">
+        <p>در حال بارگذاری تقویم...</p>
+      </CardContent>
+    );
+  }
+
   return (
     <CardContent className="flex flex-col md:flex-row gap-6 items-start justify-center">
         <div className="w-full md:w-auto flex flex-col items-center gap-4">
@@ -106,7 +127,7 @@ export default function EventsCalendar() {
                 onSelect={handleDateSelect}
                 className="rounded-md border glass-effect"
                 dir={calendarSystem === 'shamsi' ? 'rtl' : 'ltr'}
-                locale={calendarSystem === 'shamsi' ? require('date-fns/locale/fa-IR') : require('date-fns/locale/en-US')}
+                locale={locale}
                 modifiers={eventDays}
                 modifiersClassNames={{
                     isHoliday: 'text-red-500',

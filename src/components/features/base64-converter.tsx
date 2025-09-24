@@ -1,14 +1,14 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowRightLeft, Copy, Download, File as FileIcon, Upload, X } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Card } from '../ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 
 const toBase64 = (str: string) => {
     try {
@@ -30,8 +30,10 @@ const fromBase64 = (str: string) => {
 export default function Base64Converter() {
   const [text, setText] = useState('');
   const [base64Text, setBase64Text] = useState('');
-  const [file, setFile] = useState<File | null>(null);
-  const [fileBase64, setFileBase64] = useState('');
+  
+  const [fileToEncode, setFileToEncode] = useState<File | null>(null);
+  const [encodedFileContent, setEncodedFileContent] = useState('');
+  const [base64ToDecode, setBase64ToDecode] = useState('');
 
   const { toast } = useToast();
   
@@ -50,37 +52,45 @@ export default function Base64Converter() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-        setFile(selectedFile);
+        setFileToEncode(selectedFile);
         const reader = new FileReader();
         reader.onload = (event) => {
             const result = event.target?.result as string;
-            // result is in format "data:mime/type;base64,the_base_64_string"
-            setFileBase64(result.split(',')[1]);
+            setEncodedFileContent(result.split(',')[1]);
         };
         reader.readAsDataURL(selectedFile);
     }
   };
 
   const handleDownload = () => {
-    if (!fileBase64) {
+    if (!base64ToDecode) {
       toast({ title: 'خطا', description: 'هیچ داده Base64 برای دانلود وجود ندارد.', variant: 'destructive'});
       return;
     }
-    const byteCharacters = atob(fileBase64);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    try {
+        const byteCharacters = atob(base64ToDecode);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        
+        // Simple file type detection, can be improved
+        const mime = base64ToDecode.startsWith('data:') ? base64ToDecode.split(',')[0].split(':')[1].split(';')[0] : 'application/octet-stream';
+        const extension = mime.split('/')[1] || 'bin';
+
+        const blob = new Blob([byteArray], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `decoded-file.${extension}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        toast({ title: 'خطا', description: 'رشته Base64 نامعتبر است و قابل تبدیل به فایل نیست.', variant: 'destructive'});
     }
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: file?.type || 'application/octet-stream' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = file?.name || 'decoded-file';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
   
   const copyToClipboard = (content: string) => {
@@ -92,8 +102,8 @@ export default function Base64Converter() {
   return (
       <Tabs defaultValue="text" className="w-full pt-6">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="text">متن</TabsTrigger>
-          <TabsTrigger value="file">فایل</TabsTrigger>
+          <TabsTrigger value="text">متن ↔ Base64</TabsTrigger>
+          <TabsTrigger value="file">فایل ↔ Base64</TabsTrigger>
         </TabsList>
         <TabsContent value="text" className="space-y-4">
             <div className="space-y-2">
@@ -113,50 +123,65 @@ export default function Base64Converter() {
                 </div>
             </div>
         </TabsContent>
-        <TabsContent value="file" className="space-y-4">
-             <div className="space-y-2">
-                 <Label>انکود فایل به Base64</Label>
-                 <Card className="p-4 border-dashed">
-                     <div className="flex flex-col items-center justify-center gap-4">
-                        {!file ? (
-                             <>
-                                <Upload className="w-10 h-10 text-muted-foreground"/>
-                                <Button asChild variant="outline">
-                                    <label htmlFor="file-upload">انتخاب فایل</label>
-                                </Button>
-                                <input id="file-upload" type="file" onChange={handleFileChange} className="hidden"/>
-                            </>
-                        ) : (
-                            <div className="flex items-center gap-3 bg-muted p-3 rounded-lg w-full">
-                                <FileIcon className="w-6 h-6 text-primary"/>
-                                <div className="flex-grow">
-                                    <p className="font-semibold text-sm">{file.name}</p>
-                                    <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(2)} KB</p>
-                                </div>
-                                <Button variant="ghost" size="icon" onClick={() => { setFile(null); setFileBase64(''); }}>
-                                    <X className="w-5 h-5"/>
-                                </Button>
+        <TabsContent value="file" className="space-y-6">
+             <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg">انکود فایل به Base64</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {!fileToEncode ? (
+                         <div 
+                            className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-muted-foreground/30 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                            onClick={() => document.getElementById('file-upload-encode')?.click()}
+                          >
+                            <Upload className="w-10 h-10 text-muted-foreground/50 mb-3" />
+                            <p className="text-muted-foreground text-center font-semibold">فایل را بکشید یا برای انتخاب کلیک کنید</p>
+                            <input id="file-upload-encode" type="file" onChange={handleFileChange} className="hidden"/>
+                         </div>
+                    ) : (
+                        <div className="flex items-center gap-3 bg-muted p-3 rounded-lg w-full">
+                            <FileIcon className="w-6 h-6 text-primary"/>
+                            <div className="flex-grow">
+                                <p className="font-semibold text-sm">{fileToEncode.name}</p>
+                                <p className="text-xs text-muted-foreground">{(fileToEncode.size / 1024).toFixed(2)} KB</p>
                             </div>
-                        )}
-                     </div>
-                 </Card>
-             </div>
-             
-             <div className="space-y-2">
-                <Label htmlFor="file-base64-output" className="text-muted-foreground">خروجی Base64</Label>
-                 <div className="relative">
-                    <Textarea id="file-base64-output" value={fileBase64} onChange={(e) => setFileBase64(e.target.value)} placeholder="رشته Base64 فایل اینجا نمایش داده می‌شود یا می‌توانید برای دیکود کردن، آن را اینجا بچسبانید." className="min-h-[150px] font-mono" dir="ltr"/>
-                     <Button variant="ghost" size="icon" className="absolute top-2 left-2" onClick={() => copyToClipboard(fileBase64)}>
-                        <Copy className="w-5 h-5 text-muted-foreground"/>
-                    </Button>
-                </div>
-             </div>
+                            <Button variant="ghost" size="icon" onClick={() => { setFileToEncode(null); setEncodedFileContent(''); }}>
+                                <X className="w-5 h-5"/>
+                            </Button>
+                        </div>
+                    )}
 
-             <Button onClick={handleDownload} disabled={!fileBase64} className="w-full">
-                 <Download className="w-4 h-4 ml-2"/>
-                 دانلود فایل دیکود شده
-             </Button>
+                    <div className="space-y-2">
+                        <Label htmlFor="file-base64-output" className="text-muted-foreground">خروجی Base64</Label>
+                        <div className="relative">
+                            <Textarea id="file-base64-output" value={encodedFileContent} readOnly placeholder="رشته Base64 فایل اینجا نمایش داده می‌شود." className="min-h-[150px] font-mono bg-muted/50" dir="ltr"/>
+                            <Button variant="ghost" size="icon" className="absolute top-2 left-2" onClick={() => copyToClipboard(encodedFileContent)}>
+                                <Copy className="w-5 h-5 text-muted-foreground"/>
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+             </Card>
+
+             <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg">دیکود Base64 به فایل</CardTitle>
+                </CardHeader>
+                 <CardContent className="space-y-4">
+                     <div className="space-y-2">
+                        <Label htmlFor="base64-to-decode-input" className="text-muted-foreground">رشته Base64 را وارد کنید</Label>
+                         <div className="relative">
+                            <Textarea id="base64-to-decode-input" value={base64ToDecode} onChange={(e) => setBase64ToDecode(e.target.value)} placeholder="رشته Base64 را اینجا بچسبانید..." className="min-h-[150px] font-mono" dir="ltr"/>
+                        </div>
+                     </div>
+                     <Button onClick={handleDownload} disabled={!base64ToDecode} className="w-full">
+                         <Download className="w-4 h-4 ml-2"/>
+                         دانلود فایل دیکود شده
+                     </Button>
+                </CardContent>
+             </Card>
         </TabsContent>
       </Tabs>
   );
 }
+

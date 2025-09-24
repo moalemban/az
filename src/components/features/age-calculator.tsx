@@ -1,6 +1,8 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import type { Locale } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -21,6 +23,7 @@ export default function AgeCalculator() {
   
   const [gregorianDate, setGregorianDate] = useState<Date | undefined>();
   const [gregorianPopoverOpen, setGregorianPopoverOpen] = useState(false);
+  const [enUSLocale, setEnUSLocale] = useState<Locale | undefined>(undefined);
   
   const [shamsiYear, setShamsiYear] = useState<string>('');
   const [shamsiMonth, setShamsiMonth] = useState<string>('');
@@ -32,6 +35,11 @@ export default function AgeCalculator() {
   const dayRef = useRef<HTMLInputElement>(null);
   const monthRef = useRef<HTMLInputElement>(null);
   const yearRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Dynamically load the locale to avoid SSR issues
+    import('date-fns/locale/en-US').then(locale => setEnUSLocale(locale.default));
+  }, []);
 
   const calculateAge = (birthDate: Date) => {
     const now = new Date();
@@ -146,7 +154,7 @@ export default function AgeCalculator() {
           <PopoverTrigger asChild>
             <Button variant={'outline'} className={cn('w-full justify-start text-left font-normal h-12 text-base', !gregorianDate && 'text-muted-foreground')}>
               <CalendarIcon className="ml-2 h-5 w-5" />
-              {gregorianDate ? format(gregorianDate, 'PPP') : <span>تاریخ تولد خود را انتخاب کنید</span>}
+              {gregorianDate ? format(gregorianDate, 'PPP', { locale: enUSLocale }) : <span>تاریخ تولد خود را انتخاب کنید</span>}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0 glass-effect" align="start">
@@ -154,6 +162,7 @@ export default function AgeCalculator() {
               mode="single"
               selected={gregorianDate}
               onSelect={handleGregorianSelect}
+              locale={enUSLocale}
               captionLayout="dropdown-buttons"
               fromYear={1900}
               toYear={new Date().getFullYear()}
@@ -195,3 +204,5 @@ export default function AgeCalculator() {
     </CardContent>
   );
 }
+
+  

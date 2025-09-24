@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -27,6 +28,7 @@ const rgbToHex = (rgb: string): string => {
   const parts = rgb.split(',').map(s => parseInt(s.trim(), 10));
   if (parts.length !== 3 || parts.some(isNaN)) return '';
   const [r, g, b] = parts;
+  if ([r, g, b].some(val => val < 0 || val > 255)) return '';
   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
 };
 
@@ -114,26 +116,34 @@ export default function ColorConverter() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (lastChanged === 'hex' && /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex)) {
+    if (lastChanged !== 'hex') return;
+    if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex)) {
         const newRgb = hexToRgb(hex);
-        setRgb(newRgb);
-        setHsl(rgbToHsl(newRgb));
+        if (newRgb) {
+          setRgb(newRgb);
+          const newHsl = rgbToHsl(newRgb);
+          if (newHsl) setHsl(newHsl);
+        }
     }
   }, [hex, lastChanged]);
 
   useEffect(() => {
-    if (lastChanged === 'rgb') {
-        const newHex = rgbToHex(rgb);
-        setHex(newHex);
-        setHsl(rgbToHsl(rgb));
+    if (lastChanged !== 'rgb') return;
+    const newHex = rgbToHex(rgb);
+    if (newHex) {
+      setHex(newHex);
+      const newHsl = rgbToHsl(rgb);
+      if (newHsl) setHsl(newHsl);
     }
   }, [rgb, lastChanged]);
 
   useEffect(() => {
-    if (lastChanged === 'hsl') {
-        const newRgb = hslToRgb(hsl);
-        setRgb(newRgb);
-        setHex(rgbToHex(newRgb));
+    if (lastChanged !== 'hsl') return;
+    const newRgb = hslToRgb(hsl);
+    if (newRgb) {
+      setRgb(newRgb);
+      const newHex = rgbToHex(newRgb);
+      if (newHex) setHex(newHex);
     }
   }, [hsl, lastChanged]);
 
@@ -149,8 +159,8 @@ export default function ColorConverter() {
         <div className="relative">
           <Input 
             type="color" 
-            value={hex}
-            onChange={e => { setHex(e.target.value); setLastChanged('hex'); }}
+            value={/^^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex) ? hex : '#000000'}
+            onChange={e => { setHex(e.target.value.toUpperCase()); setLastChanged('hex'); }}
             className="w-24 h-24 p-2 cursor-pointer" 
           />
         </div>
@@ -170,14 +180,14 @@ export default function ColorConverter() {
           value={rgb}
           onChange={val => { setRgb(val); setLastChanged('rgb'); }}
           placeholder="106, 62, 171"
-          onCopy={() => copyToClipboard(rgb)}
+          onCopy={() => copyToClipboard(`rgb(${rgb})`)}
         />
         <ColorInput 
           label="HSL" 
           value={hsl}
           onChange={val => { setHsl(val); setLastChanged('hsl'); }}
           placeholder="265, 48%, 46%"
-          onCopy={() => copyToClipboard(hsl)}
+          onCopy={() => copyToClipboard(`hsl(${hsl})`)}
         />
       </div>
     </CardContent>

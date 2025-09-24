@@ -6,13 +6,16 @@ import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Printer, FileText, Upload, BarChart, CalendarDays } from 'lucide-react';
+import { Trash2, Plus, Printer, FileText, Upload, BarChart, CalendarDays, ArrowLeft, Building, User } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { numToWords } from '@/lib/utils';
 import Image from 'next/image';
 import { Separator } from '../ui/separator';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Barcode from 'react-barcode';
+import { cn } from '@/lib/utils';
+
+type InvoiceMode = 'selector' | 'official' | 'simple';
 
 type InvoiceItem = {
   id: number;
@@ -43,35 +46,46 @@ const parseFormattedNumber = (str: string) => {
 };
 
 
-const PartyInput = ({ title, party, setParty }: { title: string, party: PartyInfo, setParty: (value: PartyInfo) => void }) => (
+const PartyInput = ({ title, party, setParty, isOfficial }: { title: string, party: PartyInfo, setParty: (value: PartyInfo) => void, isOfficial: boolean }) => (
     <div className="space-y-3 glass-effect p-4 rounded-xl">
-      <h4 className="font-semibold text-lg text-foreground/90 border-b pb-2">{title}</h4>
+      <h4 className="font-semibold text-lg text-foreground/90 border-b pb-2 flex items-center gap-2">
+          {title === 'فروشنده' ? <Building className="w-5 h-5"/> : <User className="w-5 h-5"/>}
+          {title}
+      </h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <div className="space-y-1">
-          <Label>نام</Label>
-          <Input placeholder="نام شخص/شرکت" value={party.name} onChange={(e) => setParty({ ...party, name: e.target.value })} />
-        </div>
-        <div className="space-y-1">
-          <Label>کد/شناسه ملی</Label>
-          <Input placeholder="کد ملی/شناسه" value={party.nationalId} onChange={(e) => setParty({ ...party, nationalId: e.target.value })} />
-        </div>
         <div className="space-y-1 sm:col-span-2">
-          <Label>آدرس</Label>
-          <Input placeholder="آدرس کامل" value={party.address} onChange={(e) => setParty({ ...party, address: e.target.value })} />
+          <Label>نام شخص/شرکت</Label>
+          <Input placeholder="نام کامل" value={party.name} onChange={(e) => setParty({ ...party, name: e.target.value })} />
         </div>
-         <div className="space-y-1">
+        {isOfficial && (
+             <div className="space-y-1">
+                <Label>کد/شناسه ملی</Label>
+                <Input placeholder="کد ملی/شناسه" value={party.nationalId} onChange={(e) => setParty({ ...party, nationalId: e.target.value })} />
+            </div>
+        )}
+        <div className="space-y-1">
            <Label>تلفن</Label>
           <Input placeholder="شماره تماس" value={party.phone} onChange={(e) => setParty({ ...party, phone: e.target.value })} />
         </div>
-        <div className="space-y-1">
-          <Label>ایمیل</Label>
-          <Input placeholder="آدرس ایمیل" type="email" value={party.email} onChange={(e) => setParty({ ...party, email: e.target.value })} />
-        </div>
+        {isOfficial && (
+            <>
+                <div className="space-y-1 sm:col-span-2">
+                    <Label>آدرس</Label>
+                    <Input placeholder="آدرس کامل" value={party.address} onChange={(e) => setParty({ ...party, address: e.target.value })} />
+                </div>
+                <div className="space-y-1">
+                    <Label>ایمیل</Label>
+                    <Input placeholder="آدرس ایمیل" type="email" value={party.email} onChange={(e) => setParty({ ...party, email: e.target.value })} />
+                </div>
+            </>
+        )}
       </div>
     </div>
   );
   
 export default function InvoiceGenerator() {
+  const [invoiceMode, setInvoiceMode] = useState<InvoiceMode>('selector');
+
   const [seller, setSeller] = useState<PartyInfo>({ name: 'نام شرکت شما', nationalId: '', address: 'آدرس شما', phone: 'تلفن شما', email: 'ایمیل شما' });
   const [buyer, setBuyer] = useState<PartyInfo>({ name: 'مرتضی محمدی', nationalId: '', address: '', phone: '۰۹۱۲۱۲۳۴۵۶۷', email: 'morteza123@gmail.com' });
   const [invoiceNumber, setInvoiceNumber] = useState('۱۳۹۹۰۰۰۰۱');
@@ -80,7 +94,6 @@ export default function InvoiceGenerator() {
   const [items, setItems] = useState<InvoiceItem[]>([
       { id: 1, description: 'نام کالای ۱', quantity: 1, unitPrice: 10000, discount: 1000 },
       { id: 2, description: 'نام کالای ۲', quantity: 1, unitPrice: 20000, discount: 1000 },
-      { id: 3, description: 'نام کالای ۳', quantity: 2, unitPrice: 30000, discount: 1000 },
   ]);
   const [taxRate, setTaxRate] = useState(9);
   const [description, setDescription] = useState('');
@@ -163,32 +176,58 @@ export default function InvoiceGenerator() {
   const subtotal = useMemo(() => items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0), [items]);
   const totalDiscount = useMemo(() => items.reduce((acc, item) => acc + (item.quantity * item.discount), 0), [items]);
   const subtotalAfterDiscount = subtotal - totalDiscount;
-  const taxAmount = useMemo(() => subtotalAfterDiscount * (taxRate / 100), [subtotalAfterDiscount, taxRate]);
+  const taxAmount = useMemo(() => invoiceMode === 'official' ? subtotalAfterDiscount * (taxRate / 100) : 0, [subtotalAfterDiscount, taxRate, invoiceMode]);
   const grandTotal = useMemo(() => subtotalAfterDiscount + taxAmount, [subtotalAfterDiscount, taxAmount]);
   const grandTotalInWords = useMemo(() => numToWords(String(Math.floor(grandTotal))), [grandTotal]);
+  
+  if (invoiceMode === 'selector') {
+    return (
+      <CardContent className="flex flex-col items-center gap-6 pt-10">
+        <h3 className="text-xl font-bold">ابتدا نوع فاکتور خود را انتخاب کنید:</h3>
+        <div className="grid sm:grid-cols-2 gap-6 w-full max-w-2xl">
+          <button className="text-right p-6 rounded-2xl border-2 border-transparent hover:border-primary bg-muted/30 card-hover" onClick={() => setInvoiceMode('official')}>
+            <h4 className="text-lg font-semibold text-primary flex items-center gap-2"><FileText />فاکتور رسمی</h4>
+            <p className="text-sm text-muted-foreground mt-2">شامل تمامی جزئیات قانونی مانند کد ملی، شناسه اقتصادی، آدرس، و محاسبه مالیات بر ارزش افزوده.</p>
+          </button>
+          <button className="text-right p-6 rounded-2xl border-2 border-transparent hover:border-primary bg-muted/30 card-hover" onClick={() => setInvoiceMode('simple')}>
+            <h4 className="text-lg font-semibold text-primary flex items-center gap-2"><FileText />فاکتور ساده</h4>
+            <p className="text-sm text-muted-foreground mt-2">یک پیش‌فاکتور یا فاکتور فروش سریع بدون جزئیات رسمی و مالیات. مناسب برای کارهای داخلی.</p>
+          </button>
+        </div>
+      </CardContent>
+    );
+  }
+
+  const isOfficial = invoiceMode === 'official';
 
   return (
     <CardContent className="space-y-6">
         <div className="grid lg:grid-cols-2 gap-8">
             {/* Form Area */}
             <div className="space-y-6 no-print">
-                <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
-                    <FileText className="w-6 h-6 text-primary" />
-                    اطلاعات فاکتور
-                </h3>
-                <div className="grid md:grid-cols-1 gap-4">
-                    <PartyInput title="فروشنده" party={seller} setParty={setSeller} />
-                    <PartyInput title="خریدار" party={buyer} setParty={setBuyer} />
+                <div className="flex justify-between items-center">
+                    <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
+                        <FileText className="w-6 h-6 text-primary" />
+                        اطلاعات فاکتور {isOfficial ? 'رسمی' : 'ساده'}
+                    </h3>
+                    <Button variant="link" onClick={() => setInvoiceMode('selector')}>
+                        <ArrowLeft className="w-4 h-4 ml-1" />
+                        تغییر نوع
+                    </Button>
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-1 gap-4">
+                    <PartyInput title="فروشنده" party={seller} setParty={setSeller} isOfficial={isOfficial} />
+                    <PartyInput title="خریدار" party={buyer} setParty={setBuyer} isOfficial={isOfficial} />
+                </div>
+                <div className={cn("grid md:grid-cols-2 gap-4", !isOfficial && 'md:grid-cols-1')}>
                     <Input placeholder="شماره فاکتور" value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} />
-                    <Input placeholder="تاریخ فاکتور" value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} />
+                    {isOfficial && <Input placeholder="تاریخ فاکتور" value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} />}
                 </div>
 
                 <div className="space-y-3 glass-effect p-4 rounded-xl">
                     <h4 className="font-semibold text-lg text-foreground/90">ردیف‌های فاکتور</h4>
                     {items.map((item) => (
-                        <div key={item.id} className="grid grid-cols-[1fr,90px,120px,110px,auto] gap-2 items-center">
+                        <div key={item.id} className="grid grid-cols-[1fr,80px,110px,100px,auto] gap-2 items-center">
                             <Input placeholder={`شرح کالا`} value={item.description} onChange={e => handleItemChange(item.id, 'description', e.target.value)} />
                             <Input type="text" placeholder="تعداد" value={formatNumber(item.quantity)} onChange={e => handleItemChange(item.id, 'quantity', e.target.value)} className="text-center" dir="ltr"/>
                             <Input type="text" placeholder="قیمت واحد" value={formatNumber(item.unitPrice)} onChange={e => handleItemChange(item.id, 'unitPrice', e.target.value)} className="text-center" dir="ltr"/>
@@ -199,11 +238,13 @@ export default function InvoiceGenerator() {
                     <Button onClick={addItem} variant="outline" size="sm" className="mt-2"><Plus className="w-4 h-4 ml-2"/> افزودن ردیف</Button>
                 </div>
 
-                 <div className="grid md:grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                        <Label>مالیات بر ارزش افزوده (%)</Label>
-                        <Input type="number" value={taxRate} onChange={e => setTaxRate(parseFloat(e.target.value) || 0)} className="text-center"/>
-                     </div>
+                 <div className={cn("grid gap-4", isOfficial ? "md:grid-cols-2" : "md:grid-cols-1")}>
+                     {isOfficial && (
+                        <div className="space-y-2">
+                            <Label>مالیات بر ارزش افزوده (%)</Label>
+                            <Input type="number" value={taxRate} onChange={e => setTaxRate(parseFloat(e.target.value) || 0)} className="text-center"/>
+                        </div>
+                     )}
                       <div className="space-y-2">
                         <Label>لوگو</Label>
                         <Input type="file" accept="image/*" onChange={handleLogoUpload} />
@@ -218,7 +259,7 @@ export default function InvoiceGenerator() {
                 {/* Header */}
                 <div className="invoice-header-print">
                     <div className="text-right space-y-1">
-                        <h1 className="text-2xl font-bold">فاکتور فروش</h1>
+                        <h1 className="text-2xl font-bold">فاکتور فروش {isOfficial ? 'رسمی' : 'ساده'}</h1>
                         <p className="font-semibold">{seller.name || 'نام شرکت'}</p>
                     </div>
                     <div className="flex flex-col items-center gap-2">
@@ -227,18 +268,23 @@ export default function InvoiceGenerator() {
                     </div>
                     <div className="text-left space-y-1 text-sm">
                         <div><strong className='ml-2'>تاریخ ثبت:</strong>{invoiceDate || '---'}</div>
-                        <div><strong className='ml-2'>تاریخ سررسید:</strong>{dueDate || '---'}</div>
+                        {isOfficial && <div><strong className='ml-2'>تاریخ سررسید:</strong>{dueDate || '---'}</div>}
                         <div className='flex items-center justify-end'><strong className='ml-2'>شماره:</strong> <span className='font-mono'>{invoiceNumber || '---'}</span></div>
-                        {invoiceNumber && <div className='pt-1'><Barcode value={invoiceNumber} height={30} width={1.5} displayValue={false} /></div>}
+                        {isOfficial && invoiceNumber && <div className='pt-1'><Barcode value={invoiceNumber} height={30} width={1.5} displayValue={false} /></div>}
                     </div>
                 </div>
 
                 {/* Seller & Buyer Info */}
                 <div className="party-info-container-print border-y py-3">
                     <div className="party-info-print">
+                        <p><strong>فروشنده:</strong> {seller.name || '---'}</p>
+                        <p><strong>تلفن:</strong> {seller.phone || '---'}</p>
+                        {isOfficial && <p><strong>شناسه ملی:</strong> {seller.nationalId || '---'}</p>}
+                    </div>
+                     <div className="party-info-print">
                         <p><strong>خریدار:</strong> {buyer.name || '---'}</p>
-                        <p><strong>موبایل:</strong> {buyer.phone || '---'}</p>
-                        <p><strong>ایمیل:</strong> {buyer.email || '---'}</p>
+                        <p><strong>تلفن:</strong> {buyer.phone || '---'}</p>
+                        {isOfficial && <p><strong>شناسه ملی:</strong> {buyer.nationalId || '---'}</p>}
                     </div>
                 </div>
 
@@ -250,23 +296,20 @@ export default function InvoiceGenerator() {
                             <TableHead>شرح کالا / خدمات</TableHead>
                             <TableHead className="text-center">تعداد</TableHead>
                             <TableHead className="text-center">قیمت واحد (تومان)</TableHead>
-                            <TableHead className="text-center">تخفیف (تومان)</TableHead>
-                            <TableHead className="text-center">جمع بدون تخفیف (تومان)</TableHead>
+                            {isOfficial && <TableHead className="text-center">تخفیف (تومان)</TableHead>}
                             <TableHead className="text-center">جمع کل (تومان)</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {items.map((item, index) => {
-                            const totalWithoutDiscount = item.quantity * item.unitPrice;
-                            const total = totalWithoutDiscount - (item.quantity * item.discount);
+                            const total = item.quantity * item.unitPrice - (isOfficial ? item.quantity * item.discount : 0);
                             return (
                                 <TableRow key={item.id}>
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>{item.description}</TableCell>
                                     <TableCell className="text-center font-mono">{formatNumber(item.quantity)}</TableCell>
                                     <TableCell className="text-center font-mono">{formatNumber(item.unitPrice)}</TableCell>
-                                    <TableCell className="text-center font-mono text-red-600">{formatNumber(item.discount)}</TableCell>
-                                    <TableCell className="text-center font-mono">{formatNumber(totalWithoutDiscount)}</TableCell>
+                                    {isOfficial && <TableCell className="text-center font-mono text-red-600">{formatNumber(item.discount)}</TableCell>}
                                     <TableCell className="text-center font-mono font-semibold">{formatNumber(total)}</TableCell>
                                 </TableRow>
                             );
@@ -276,16 +319,20 @@ export default function InvoiceGenerator() {
                 
                  <div className="totals-container-print mt-4">
                     <div className="words-section flex-1">
-                        <p><strong>مکان قرارگیری متن:</strong> {description || '---'}</p>
-                        <div className="signatures-print">
-                            <div><p>امضای فروشنده</p><div className="h-16 w-32 border-t mt-2"></div></div>
-                            <div><p>امضای خریدار</p><div className="h-16 w-32 border-t mt-2"></div></div>
-                        </div>
+                        <p><strong>توضیحات:</strong> {description || '---'}</p>
+                        {isOfficial && 
+                            <div className="signatures-print">
+                                <div><p>امضای فروشنده</p><div className="h-16 w-32 border-t mt-2"></div></div>
+                                <div><p>امضای خریدار</p><div className="h-16 w-32 border-t mt-2"></div></div>
+                            </div>
+                        }
                     </div>
                      <div className="calc-section-print">
-                        <div><span>مجموع:</span><span className="font-mono">{formatNumber(subtotal)} تومان</span></div>
-                        <div><span>تخفیف:</span><span className="font-mono">{formatNumber(totalDiscount)} تومان</span></div>
-                        <div><span>ارزش افزوده ({formatNumber(taxRate)}٪):</span><span className="font-mono">{formatNumber(taxAmount)} تومان</span></div>
+                        <div><span>جمع کل:</span><span className="font-mono">{formatNumber(subtotal)} تومان</span></div>
+                        {isOfficial && <>
+                            <div><span>تخفیف:</span><span className="font-mono">{formatNumber(totalDiscount)} تومان</span></div>
+                            <div><span>ارزش افزوده ({formatNumber(taxRate)}٪):</span><span className="font-mono">{formatNumber(taxAmount)} تومان</span></div>
+                        </>}
                         <div className="grand-total-print"><span>مبلغ نهایی:</span><span className="font-mono">{formatNumber(grandTotal)} تومان</span></div>
                     </div>
                 </div>
@@ -296,3 +343,5 @@ export default function InvoiceGenerator() {
     </CardContent>
   );
 }
+
+    

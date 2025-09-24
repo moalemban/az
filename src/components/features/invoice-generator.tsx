@@ -6,19 +6,15 @@ import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Printer, FileText, Upload, ArrowLeft, Building, User, Wand2, Star, Share2, Ticket, Settings, Briefcase, CreditCard, Send, TrendingUp, Archive, File, BrainCircuit } from 'lucide-react';
+import { Trash2, Plus, Printer, FileText, Upload, Building, User, Wand2, Star, Share2, Settings, Briefcase, CreditCard, Send, TrendingUp, Archive, File, BrainCircuit } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import Image from 'next/image';
 import { Separator } from '../ui/separator';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import Barcode from 'react-barcode';
-import { cn } from '@/lib/utils';
 import { numToWords } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { Textarea } from '../ui/textarea';
 
 type InvoiceTemplate = 'venus_official' | 'classic_simple';
-type InvoiceMode = 'template_selector' | InvoiceTemplate;
 
 type InvoiceItem = {
   id: number;
@@ -49,7 +45,7 @@ const parseFormattedNumber = (str: string) => {
 };
 
 
-const PartyInput = ({ title, party, setParty, isOfficial }: { title: string, party: PartyInfo, setParty: (value: PartyInfo) => void, isOfficial: boolean }) => (
+const PartyInput = ({ title, party, setParty }: { title: string, party: PartyInfo, setParty: (value: PartyInfo) => void }) => (
     <div className="space-y-3">
       <h4 className="font-semibold text-lg text-foreground/90 border-b pb-2 flex items-center gap-2">
           {title === 'فروشنده' ? <Building className="w-5 h-5"/> : <User className="w-5 h-5"/>}
@@ -60,28 +56,22 @@ const PartyInput = ({ title, party, setParty, isOfficial }: { title: string, par
           <Label>نام شخص/شرکت</Label>
           <Input placeholder="نام کامل" value={party.name} onChange={(e) => setParty({ ...party, name: e.target.value })} />
         </div>
-        {isOfficial && (
-             <div className="space-y-1">
-                <Label>کد/شناسه ملی</Label>
-                <Input placeholder="کد ملی/شناسه" value={party.nationalId} onChange={(e) => setParty({ ...party, nationalId: e.target.value })} />
-            </div>
-        )}
+        <div className="space-y-1">
+          <Label>کد/شناسه ملی</Label>
+          <Input placeholder="کد ملی/شناسه" value={party.nationalId} onChange={(e) => setParty({ ...party, nationalId: e.target.value })} />
+        </div>
         <div className="space-y-1">
            <Label>تلفن</Label>
           <Input placeholder="شماره تماس" value={party.phone} onChange={(e) => setParty({ ...party, phone: e.target.value })} />
         </div>
-        {isOfficial && (
-            <>
-                <div className="space-y-1 sm:col-span-2">
-                    <Label>آدرس</Label>
-                    <Input placeholder="آدرس کامل" value={party.address} onChange={(e) => setParty({ ...party, address: e.target.value })} />
-                </div>
-                 <div className="space-y-1 sm:col-span-2">
-                    <Label>ایمیل</Label>
-                    <Input placeholder="ایمیل" value={party.email} onChange={(e) => setParty({ ...party, email: e.target.value })} />
-                </div>
-            </>
-        )}
+        <div className="space-y-1 sm:col-span-2">
+            <Label>آدرس</Label>
+            <Input placeholder="آدرس کامل" value={party.address} onChange={(e) => setParty({ ...party, address: e.target.value })} />
+        </div>
+          <div className="space-y-1 sm:col-span-2">
+            <Label>ایمیل</Label>
+            <Input placeholder="ایمیل" value={party.email} onChange={(e) => setParty({ ...party, email: e.target.value })} />
+        </div>
       </div>
     </div>
   );
@@ -99,7 +89,7 @@ const PartyInput = ({ title, party, setParty, isOfficial }: { title: string, par
 );
   
 export default function InvoiceGenerator() {
-  const [invoiceMode, setInvoiceMode] = useState<InvoiceMode>('template_selector');
+  const [template, setTemplate] = useState<InvoiceTemplate>('venus_official');
 
   const [seller, setSeller] = useState<PartyInfo>({ name: 'شرکت شما', nationalId: '۱۲۳۴۵۶۷۸۹۰', address: 'آدرس فروشنده', phone: 'تلفن فروشنده', email: 'ایمیل فروشنده' });
   const [buyer, setBuyer] = useState<PartyInfo>({ name: 'مشتری', nationalId: '۰۹۸۷۶۵۴۳۲۱', address: 'آدرس خریدار', phone: 'تلفن خریدار', email: 'ایمیل خریدار' });
@@ -127,7 +117,7 @@ export default function InvoiceGenerator() {
             printWindow.document.write('<html><head><title>چاپ فاکتور</title>');
             printWindow.document.write('<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />');
             
-            const isVenus = invoiceMode === 'venus_official';
+            const isVenus = template === 'venus_official';
             const styles = `
                 <style>
                     body { font-family: 'Vazirmatn', sans-serif; direction: rtl; background-color: #fff; color: #000; }
@@ -170,7 +160,7 @@ export default function InvoiceGenerator() {
             `;
             printWindow.document.write(styles);
             printWindow.document.write('</head><body><div class="invoice-print-container">');
-            printWindow.document.write(printContent.innerHTML.replace(/<canvas/g, '<img src="' + (printContent.querySelector('canvas')?.toDataURL() || '') + '" style="height: 50px;"'));
+            printWindow.document.write(printContent.innerHTML);
             printWindow.document.write('</div></body></html>');
             printWindow.document.close();
             printWindow.focus();
@@ -212,40 +202,12 @@ export default function InvoiceGenerator() {
     }
   }
 
-  const isOfficial = invoiceMode === 'venus_official';
+  const isOfficial = template === 'venus_official';
   const subtotal = useMemo(() => items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0), [items]);
   const totalDiscount = useMemo(() => items.reduce((acc, item) => acc + (item.quantity * item.discount), 0), [items]);
   const subtotalAfterDiscount = subtotal - totalDiscount;
-  const taxAmount = useMemo(() => isOfficial ? subtotalAfterDiscount * (taxRate / 100) : 0, [subtotalAfterDiscount, taxRate, invoiceMode, isOfficial]);
+  const taxAmount = useMemo(() => isOfficial ? subtotalAfterDiscount * (taxRate / 100) : 0, [subtotalAfterDiscount, taxRate, isOfficial]);
   const grandTotal = useMemo(() => subtotalAfterDiscount + taxAmount, [subtotalAfterDiscount, taxAmount]);
-
-  if (invoiceMode === 'template_selector') {
-    return (
-      <CardContent className="flex flex-col items-center gap-6 pt-10">
-        <h3 className="text-xl font-bold text-center">جهت مشاهده یا دریافت فاکتور، قالب مدنظر خود را انتخاب نمایید:</h3>
-        <div className="grid sm:grid-cols-2 gap-6 w-full max-w-4xl">
-          <button className="text-right p-6 rounded-2xl border-2 border-transparent hover:border-primary bg-muted/30 card-hover" onClick={() => setInvoiceMode('venus_official')}>
-            <div className='flex justify-between items-center'>
-                <h4 className="text-lg font-semibold text-primary flex items-center gap-2"><FileText />قالب ونوس (رسمی)</h4>
-                <div className='w-40 h-28 border rounded-md p-1 bg-white shadow-sm overflow-hidden'>
-                    <Image src="https://i.imgur.com/uGg0mTO.png" alt="Venus Template Preview" width={160} height={112} className="object-cover object-top" />
-                </div>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">یک قالب شیک و مدرن مناسب برای اکثر کسب‌وکارها، با تمام جزئیات رسمی و محاسبه مالیات.</p>
-          </button>
-           <button className="text-right p-6 rounded-2xl border-2 border-transparent hover:border-primary bg-muted/30 card-hover" onClick={() => setInvoiceMode('classic_simple')}>
-            <div className='flex justify-between items-center'>
-                <h4 className="text-lg font-semibold text-primary flex items-center gap-2"><FileText />قالب کلاسیک (ساده)</h4>
-                <div className='w-40 h-28 border rounded-md p-1 bg-white shadow-sm overflow-hidden'>
-                    <Image src="https://i.imgur.com/gKIn0De.png" alt="Classic Template Preview" width={160} height={112} className="object-cover object-top" />
-                </div>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">یک قالب ساده و استاندارد، مناسب برای فاکتورهای سریع و غیررسمی بدون محاسبه مالیات.</p>
-          </button>
-        </div>
-      </CardContent>
-    );
-  }
 
   const renderVenusPreview = () => (
     <div className='bg-white text-black p-4 rounded-lg shadow-lg border'>
@@ -414,18 +376,14 @@ export default function InvoiceGenerator() {
                         <FileText className="w-6 h-6 text-primary" />
                         اطلاعات فاکتور
                     </h3>
-                    <Button variant="link" onClick={() => setInvoiceMode('template_selector')}>
-                        <ArrowLeft className="w-4 h-4 ml-1" />
-                        تغییر قالب
-                    </Button>
                 </div>
                  <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3']} className="w-full space-y-4">
                     <AccordionItem value="item-1" className="glass-effect rounded-xl border px-4">
                         <AccordionTrigger><div className='flex items-center gap-2'><User className='w-5 h-5'/>اطلاعات طرفین</div></AccordionTrigger>
                         <AccordionContent className="pt-4 space-y-4">
-                            <PartyInput title="فروشنده" party={seller} setParty={setSeller} isOfficial={isOfficial} />
+                            <PartyInput title="فروشنده" party={seller} setParty={setSeller} />
                             <Separator />
-                            <PartyInput title="خریدار" party={buyer} setParty={setBuyer} isOfficial={isOfficial} />
+                            <PartyInput title="خریدار" party={buyer} setParty={setBuyer} />
                         </AccordionContent>
                     </AccordionItem>
 
@@ -447,17 +405,15 @@ export default function InvoiceGenerator() {
                      <AccordionItem value="item-3" className="glass-effect rounded-xl border px-4">
                         <AccordionTrigger><div className='flex items-center gap-2'><Settings className='w-5 h-5'/>تنظیمات و جزئیات</div></AccordionTrigger>
                         <AccordionContent className="pt-4 space-y-4">
-                             <div className={cn("grid gap-4", isOfficial ? "md:grid-cols-3" : "md:grid-cols-2")}>
+                             <div className="grid gap-4 md:grid-cols-3">
                                <div className="space-y-1"><Label>شماره فاکتور</Label><Input placeholder="شماره فاکتور" value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} /></div>
                                <div className="space-y-1"><Label>تاریخ ثبت</Label><Input placeholder="تاریخ ثبت" value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} /></div>
-                                {isOfficial && <div className="space-y-1"><Label>تاریخ سررسید</Label><Input placeholder="تاریخ سررسید" value={dueDate} onChange={e => setDueDate(e.target.value)} /></div>}
+                               <div className="space-y-1"><Label>تاریخ سررسید</Label><Input placeholder="تاریخ سررسید" value={dueDate} onChange={e => setDueDate(e.target.value)} /></div>
                             </div>
-                            {isOfficial && (
-                              <div className="space-y-1">
-                                <Label>مالیات بر ارزش افزوده (%)</Label>
-                                <Input type="number" value={taxRate} onChange={e => setTaxRate(parseFloat(e.target.value) || 0)} className="text-center"/>
-                              </div>
-                            )}
+                            <div className="space-y-1">
+                              <Label>مالیات بر ارزش افزوده (%)</Label>
+                              <Input type="number" value={taxRate} onChange={e => setTaxRate(parseFloat(e.target.value) || 0)} className="text-center"/>
+                            </div>
                             <div className="space-y-1">
                                 <Label>توضیحات</Label>
                                 <Textarea placeholder="توضیحات اضافی فاکتور" value={description} onChange={e => setDescription(e.target.value)} />
@@ -488,12 +444,16 @@ export default function InvoiceGenerator() {
             </div>
             
             {/* Right Side: Preview */}
-            <div className='space-y-6 lg:sticky top-24'>
+            <div className='space-y-4 lg:sticky top-24'>
+                 <div className="flex items-center justify-center p-1 bg-muted rounded-lg w-full">
+                    <Button onClick={() => setTemplate('venus_official')} variant={template === 'venus_official' ? 'default' : 'ghost'} className="w-full">قالب ونوس (رسمی)</Button>
+                    <Button onClick={() => setTemplate('classic_simple')} variant={template === 'classic_simple' ? 'default' : 'ghost'} className="w-full">قالب کلاسیک (ساده)</Button>
+                 </div>
                  <div ref={printRef} className='hidden print:block'>
-                   {isOfficial ? renderVenusPreview() : renderClassicPreview()}
+                   {template === 'venus_official' ? renderVenusPreview() : renderClassicPreview()}
                 </div>
                  <div className='hidden lg:block'>
-                   {isOfficial ? renderVenusPreview() : renderClassicPreview()}
+                   {template === 'venus_official' ? renderVenusPreview() : renderClassicPreview()}
                 </div>
                  <Button onClick={handlePrint} className="w-full h-12 text-lg no-print"><Printer className="w-5 h-5 ml-2"/> چاپ یا دریافت PDF</Button>
             </div>
@@ -501,4 +461,3 @@ export default function InvoiceGenerator() {
     </CardContent>
   );
 }
-

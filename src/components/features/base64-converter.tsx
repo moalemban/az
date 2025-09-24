@@ -12,18 +12,18 @@ import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 
 const toBase64 = (str: string) => {
     try {
-        // First, encode the string to UTF-8, then to Base64
         return btoa(unescape(encodeURIComponent(str)));
     } catch (e) {
+        console.error('Failed to encode to Base64:', e);
         return 'خطا در انکود کردن متن. ممکن است شامل کاراکترهای نامعتبر باشد.';
     }
 };
 
 const fromBase64 = (str: string) => {
     try {
-        // Decode from Base64, then from UTF-8
         return decodeURIComponent(escape(atob(str)));
     } catch (e) {
+        console.error('Failed to decode from Base64:', e);
         return 'رشته Base64 نامعتبر است.';
     }
 };
@@ -58,7 +58,6 @@ export default function Base64Converter() {
         const reader = new FileReader();
         reader.onload = (event) => {
             const result = event.target?.result as string;
-            // The result includes the full Data URI, we just need the base64 part.
             const base64Data = result.split(',')[1];
             setEncodedFileContent(base64Data);
         };
@@ -85,7 +84,6 @@ export default function Base64Converter() {
         let mime = 'application/octet-stream';
         let extension = 'bin';
         
-        // Basic MIME type detection from the first few bytes (magic numbers)
         if (byteArray.length > 3 && byteArray[0] === 0x89 && byteArray[1] === 0x50 && byteArray[2] === 0x4E && byteArray[3] === 0x47) {
             mime = 'image/png';
             extension = 'png';
@@ -124,21 +122,19 @@ export default function Base64Converter() {
           <TabsTrigger value="file">فایل ↔ Base64</TabsTrigger>
         </TabsList>
         <TabsContent value="text" className="space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
                 <Label htmlFor="text-input" className="text-muted-foreground">متن اصلی</Label>
                 <Textarea id="text-input" value={text} onChange={handleTextChange} placeholder="متن خود را اینجا وارد کنید..." className="min-h-[120px]"/>
             </div>
             <div className="flex justify-center">
                 <ArrowRightLeft className="h-6 w-6 text-muted-foreground"/>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
                 <Label htmlFor="base64-output" className="text-muted-foreground">خروجی Base64</Label>
-                <div className="relative">
-                    <Textarea id="base64-output" value={base64Text} onChange={handleBase64Change} placeholder="خروجی Base64..." className="min-h-[120px] font-mono" dir="ltr"/>
-                    <Button variant="ghost" size="icon" className="absolute top-2 left-2" onClick={() => copyToClipboard(base64Text)}>
-                        <Copy className="w-5 h-5 text-muted-foreground"/>
-                    </Button>
-                </div>
+                <Textarea id="base64-output" value={base64Text} onChange={handleBase64Change} placeholder="خروجی Base64..." className="min-h-[120px] font-mono" dir="ltr"/>
+                <Button variant="ghost" size="icon" className="absolute top-9 left-2" onClick={() => copyToClipboard(base64Text)}>
+                    <Copy className="w-5 h-5 text-muted-foreground"/>
+                </Button>
             </div>
         </TabsContent>
         <TabsContent value="file" className="space-y-6">
@@ -169,14 +165,12 @@ export default function Base64Converter() {
                         </div>
                     )}
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 relative">
                         <Label htmlFor="file-base64-output" className="text-muted-foreground">خروجی Base64</Label>
-                        <div className="relative">
-                            <Textarea id="file-base64-output" value={encodedFileContent} readOnly placeholder="رشته Base64 فایل اینجا نمایش داده می‌شود." className="min-h-[150px] font-mono bg-muted/50" dir="ltr"/>
-                            <Button variant="ghost" size="icon" className="absolute top-2 left-2" onClick={() => copyToClipboard(encodedFileContent)}>
-                                <Copy className="w-5 h-5 text-muted-foreground"/>
-                            </Button>
-                        </div>
+                        <Textarea id="file-base64-output" value={encodedFileContent} readOnly placeholder="رشته Base64 فایل اینجا نمایش داده می‌شود." className="min-h-[150px] font-mono bg-muted/50" dir="ltr"/>
+                        <Button variant="ghost" size="icon" className="absolute top-9 left-2" onClick={() => copyToClipboard(encodedFileContent)}>
+                            <Copy className="w-5 h-5 text-muted-foreground"/>
+                        </Button>
                     </div>
                 </CardContent>
              </Card>
@@ -186,11 +180,9 @@ export default function Base64Converter() {
                     <CardTitle className="text-lg">دیکود Base64 به فایل</CardTitle>
                 </CardHeader>
                  <CardContent className="space-y-4">
-                     <div className="space-y-2">
+                     <div className="space-y-2 relative">
                         <Label htmlFor="base64-to-decode-input" className="text-muted-foreground">رشته Base64 را وارد کنید</Label>
-                         <div className="relative">
-                            <Textarea id="base64-to-decode-input" value={base64ToDecode} onChange={(e) => setBase64ToDecode(e.target.value)} placeholder="رشته Base64 را اینجا بچسبانید..." className="min-h-[150px] font-mono" dir="ltr"/>
-                        </div>
+                        <Textarea id="base64-to-decode-input" value={base64ToDecode} onChange={(e) => setBase64ToDecode(e.target.value)} placeholder="رشته Base64 را اینجا بچسبانید..." className="min-h-[150px] font-mono" dir="ltr"/>
                      </div>
                      <Button onClick={handleDownload} disabled={!base64ToDecode} className="w-full">
                          <Download className="w-4 h-4 ml-2"/>

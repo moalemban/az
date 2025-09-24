@@ -6,16 +6,16 @@ import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Printer, FileText, Upload, BarChart, CalendarDays, ArrowLeft, Building, User } from 'lucide-react';
+import { Trash2, Plus, Printer, FileText, Upload, ArrowLeft, Building, User } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
-import { numToWords } from '@/lib/utils';
 import Image from 'next/image';
 import { Separator } from '../ui/separator';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Barcode from 'react-barcode';
 import { cn } from '@/lib/utils';
 
-type InvoiceMode = 'selector' | 'template_selector' | 'venus_official';
+type InvoiceTemplate = 'venus_official' | 'classic_simple';
+type InvoiceMode = 'template_selector' | InvoiceTemplate;
 
 type InvoiceItem = {
   id: number;
@@ -73,6 +73,10 @@ const PartyInput = ({ title, party, setParty, isOfficial }: { title: string, par
                     <Label>آدرس</Label>
                     <Input placeholder="آدرس کامل" value={party.address} onChange={(e) => setParty({ ...party, address: e.target.value })} />
                 </div>
+                 <div className="space-y-1 sm:col-span-2">
+                    <Label>ایمیل</Label>
+                    <Input placeholder="ایمیل" value={party.email} onChange={(e) => setParty({ ...party, email: e.target.value })} />
+                </div>
             </>
         )}
       </div>
@@ -104,30 +108,38 @@ export default function InvoiceGenerator() {
         if (printWindow) {
             printWindow.document.write('<html><head><title>چاپ فاکتور</title>');
             printWindow.document.write('<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />');
-            printWindow.document.write(`
+            
+            const isVenus = invoiceMode === 'venus_official';
+            const styles = `
                 <style>
                     body { font-family: 'Vazirmatn', sans-serif; direction: rtl; background-color: #fff; color: #000; }
                     @page { size: A4; margin: 0; }
                     .invoice-print-container { max-width: 800px; margin: auto; padding: 20px; font-size: 12px;}
-                    .invoice-header-print { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 10px; }
-                    .header-left {text-align: left;}
-                    .header-right {text-align: right;}
-                    .buyer-info-print { padding: 8px; border: 1px solid #ddd; border-radius: 8px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center; }
-                    .totals-container-print { display: flex; justify-content: space-between; align-items: flex-start; font-size: 13px; margin-top: 20px;}
-                    .calc-section-print { width: 320px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
-                    .calc-section-print > div { display: flex; justify-content: space-between; padding: 8px; }
-                    .calc-section-print > div:not(:last-child) { border-bottom: 1px solid #ddd; }
-                    .grand-total-print { font-weight: bold; background-color: #f2f2f2; }
+                    .no-print { display: none !important; }
+                    .font-mono { font-family: monospace; }
+                    img { max-width: 100%; height: auto; }
+
+                    /* Venus Template Styles */
+                    .venus-header-print { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 10px; }
+                    .venus-header-left {text-align: left;}
+                    .venus-header-right {text-align: right;}
+                    .venus-buyer-info-print { padding: 8px; border: 1px solid #ddd; border-radius: 8px; margin: 15px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;}
+                    .venus-totals-container-print { display: flex; justify-content: space-between; align-items: flex-start; font-size: 13px; margin-top: 20px;}
+                    .venus-calc-section-print { width: 320px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+                    .venus-calc-section-print > div { display: flex; justify-content: space-between; padding: 8px; }
+                    .venus-calc-section-print > div:not(:last-child) { border-bottom: 1px solid #ddd; }
+                    .venus-grand-total-print { font-weight: bold; background-color: #f2f2f2; }
+                    .venus-signatures-print { margin-top: 60px; display: flex; justify-content: space-around; font-size: 13px; }
+                    .venus-footer-print { margin-top: 50px; padding-top: 10px; border-top: 1px solid #ddd; text-align: center; font-size: 11px; color: #555; }
+                    
+                    /* Generic Table Styles */
                     table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; }
                     th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
                     th { background-color: #f2f2f2; }
                     td:first-child, td:nth-child(2) {text-align: right;}
-                    .signatures-print { margin-top: 60px; display: flex; justify-content: space-around; font-size: 13px; }
-                    .footer-print { margin-top: 50px; padding-top: 10px; border-top: 1px solid #ddd; text-align: center; font-size: 11px; color: #555; }
-                    .no-print { display: none !important; }
-                    .font-mono { font-family: monospace; }
                 </style>
-            `);
+            `;
+            printWindow.document.write(styles);
             printWindow.document.write('</head><body><div class="invoice-print-container">');
             printWindow.document.write(printContent.innerHTML.replace(/<canvas/g, '<img src="' + (printContent.querySelector('canvas')?.toDataURL() || '') + '" style="height: 50px;"'));
             printWindow.document.write('</div></body></html>');
@@ -185,11 +197,20 @@ export default function InvoiceGenerator() {
           <button className="text-right p-6 rounded-2xl border-2 border-transparent hover:border-primary bg-muted/30 card-hover" onClick={() => setInvoiceMode('venus_official')}>
             <div className='flex justify-between items-center'>
                 <h4 className="text-lg font-semibold text-primary flex items-center gap-2"><FileText />قالب ونوس (رسمی)</h4>
-                <div className='w-40 h-28 border rounded-md p-1 bg-white shadow-sm'>
+                <div className='w-40 h-28 border rounded-md p-1 bg-white shadow-sm overflow-hidden'>
                     <Image src="https://i.imgur.com/uGg0mTO.png" alt="Venus Template Preview" width={160} height={112} className="object-cover object-top" />
                 </div>
             </div>
             <p className="text-sm text-muted-foreground mt-2">یک قالب شیک و مدرن مناسب برای اکثر کسب‌وکارها، با تمام جزئیات رسمی و محاسبه مالیات.</p>
+          </button>
+           <button className="text-right p-6 rounded-2xl border-2 border-transparent hover:border-primary bg-muted/30 card-hover" onClick={() => setInvoiceMode('classic_simple')}>
+            <div className='flex justify-between items-center'>
+                <h4 className="text-lg font-semibold text-primary flex items-center gap-2"><FileText />قالب کلاسیک (ساده)</h4>
+                <div className='w-40 h-28 border rounded-md p-1 bg-white shadow-sm overflow-hidden'>
+                    <Image src="https://i.imgur.com/gKIn0De.png" alt="Classic Template Preview" width={160} height={112} className="object-cover object-top" />
+                </div>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">یک قالب ساده و استاندارد، مناسب برای فاکتورهای سریع و غیررسمی بدون محاسبه مالیات.</p>
           </button>
         </div>
       </CardContent>
@@ -197,6 +218,87 @@ export default function InvoiceGenerator() {
   }
 
   const isOfficial = invoiceMode === 'venus_official';
+
+  const renderVenusPreview = () => (
+      <div ref={printRef} className='space-y-4 bg-white text-black p-4 rounded-lg shadow-lg border'>
+          {/* Header */}
+          <div className="venus-header-print">
+              <div className="venus-header-left text-left space-y-1">
+                  {logo ? <Image src={logo} alt="Logo" width={60} height={60} className='object-contain' /> : 
+                  <div className="w-16 h-16 border-2 border-dashed flex flex-col items-center justify-center text-gray-500 text-xs"><FileText className="w-6 h-6 mb-1"/><span>لوگوی شما</span></div>}
+                  <h2 className="font-bold text-base">{seller.name}</h2>
+                  <p className="text-xs text-gray-600">{seller.nationalId ? `شناسه ملی: ${seller.nationalId}` : ''}</p>
+              </div>
+              <div className="venus-header-right text-right space-y-1 text-xs">
+                  <p><strong>تاریخ ثبت:</strong> {invoiceDate || '---'}</p>
+                  <p><strong>تاریخ سررسید:</strong> {dueDate || '---'}</p>
+                  <p><strong>شماره فاکتور:</strong> <span className='font-mono'>{invoiceNumber || '---'}</span></p>
+              </div>
+          </div>
+           <div className="h-1 bg-orange-400 w-full"></div>
+
+          {/* Buyer Info */}
+          <div className="venus-buyer-info-print text-xs">
+              <span><strong>خریدار:</strong> {buyer.name || '---'}</span>
+              <span><strong>موبایل/تلفن:</strong> {buyer.phone || '---'}</span>
+              <span><strong>شناسه ملی:</strong> {buyer.nationalId || '---'}</span>
+              <span><strong>آدرس:</strong> {buyer.address || '---'}</span>
+          </div>
+
+
+          {/* Items Table */}
+          <Table className='text-xs'>
+              <TableHeader>
+                  <TableRow>
+                      <TableHead className="w-[40px]">ردیف</TableHead>
+                      <TableHead>نام کالا/خدمات</TableHead>
+                      <TableHead>تعداد</TableHead>
+                      <TableHead>تخفیف (واحد)</TableHead>
+                      <TableHead>قیمت واحد</TableHead>
+                      <TableHead>جمع بدون تخفیف</TableHead>
+                      <TableHead>جمع کل</TableHead>
+                  </TableRow>
+              </TableHeader>
+              <TableBody>
+                  {items.map((item, index) => {
+                      const totalWithoutDiscount = item.quantity * item.unitPrice;
+                      const total = totalWithoutDiscount - (item.quantity * item.discount);
+                      return (
+                          <TableRow key={item.id}>
+                              <TableCell>{index + 1}</TableCell>
+                              <TableCell>{item.description}</TableCell>
+                              <TableCell>{formatNumber(item.quantity)}</TableCell>
+                              <TableCell className="text-red-600">{formatNumber(item.discount)}</TableCell>
+                              <TableCell>{formatNumber(item.unitPrice)}</TableCell>
+                              <TableCell>{formatNumber(totalWithoutDiscount)}</TableCell>
+                              <TableCell className="font-semibold">{formatNumber(total)}</TableCell>
+                          </TableRow>
+                      );
+                  })}
+              </TableBody>
+          </Table>
+          
+           <div className="venus-totals-container-print">
+              <div>{/* Empty div for alignment */}</div>
+               <div className="venus-calc-section-print">
+                  <div><span>مجموع:</span><span className="font-mono">{formatNumber(subtotal)}</span></div>
+                  <div><span>تخفیف:</span><span className="font-mono">{formatNumber(totalDiscount)}</span></div>
+                  <div><span>ارزش افزوده ({formatNumber(taxRate)}٪):</span><span className="font-mono">{formatNumber(taxAmount)}</span></div>
+                  <div className="venus-grand-total-print"><span>مبلغ نهایی:</span><span className="font-mono">{formatNumber(grandTotal)}</span></div>
+              </div>
+          </div>
+
+          <div className="venus-signatures-print">
+            <div>مهر و امضاء فروشنده</div>
+            <div>امضاء خریدار</div>
+          </div>
+
+          <div className="venus-footer-print">
+            <p>{seller.address}</p>
+            <p>تلفن: {seller.phone} - ایمیل: {seller.email}</p>
+          </div>
+      </div>
+  );
 
   return (
     <CardContent className="space-y-6">
@@ -226,22 +328,24 @@ export default function InvoiceGenerator() {
                 <div className="space-y-3 glass-effect p-4 rounded-xl">
                     <h4 className="font-semibold text-lg text-foreground/90">ردیف‌های فاکتور</h4>
                     {items.map((item) => (
-                        <div key={item.id} className="grid grid-cols-[1fr,80px,110px,100px,auto] gap-2 items-center">
+                        <div key={item.id} className={cn("grid gap-2 items-center", isOfficial ? "grid-cols-[1fr,80px,110px,100px,auto]" : "grid-cols-[1fr,80px,110px,auto]")}>
                             <Input placeholder={`شرح کالا`} value={item.description} onChange={e => handleItemChange(item.id, 'description', e.target.value)} />
                             <Input type="text" placeholder="تعداد" value={formatNumber(item.quantity)} onChange={e => handleItemChange(item.id, 'quantity', e.target.value)} className="text-center" dir="ltr"/>
                             <Input type="text" placeholder="قیمت واحد" value={formatNumber(item.unitPrice)} onChange={e => handleItemChange(item.id, 'unitPrice', e.target.value)} className="text-center" dir="ltr"/>
-                            <Input type="text" placeholder="تخفیف" value={formatNumber(item.discount)} onChange={e => handleItemChange(item.id, 'discount', e.target.value)} className="text-center" dir="ltr"/>
+                            {isOfficial && <Input type="text" placeholder="تخفیف" value={formatNumber(item.discount)} onChange={e => handleItemChange(item.id, 'discount', e.target.value)} className="text-center" dir="ltr"/>}
                             <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="text-destructive"><Trash2 className="w-5 h-5"/></Button>
                         </div>
                     ))}
                     <Button onClick={addItem} variant="outline" size="sm" className="mt-2"><Plus className="w-4 h-4 ml-2"/> افزودن ردیف</Button>
                 </div>
 
-                 <div className={cn("grid gap-4 md:grid-cols-2")}>
-                    <div className="space-y-2">
+                 <div className={cn("grid gap-4", isOfficial ? "md:grid-cols-2" : "md:grid-cols-1")}>
+                    {isOfficial && (
+                      <div className="space-y-2">
                         <Label>مالیات بر ارزش افزوده (%)</Label>
                         <Input type="number" value={taxRate} onChange={e => setTaxRate(parseFloat(e.target.value) || 0)} className="text-center"/>
-                    </div>
+                      </div>
+                    )}
                     <div className="space-y-2">
                       <Label>لوگو</Label>
                       <Input type="file" accept="image/*" onChange={handleLogoUpload} />
@@ -252,87 +356,13 @@ export default function InvoiceGenerator() {
             </div>
             
             {/* Printable Area */}
-            <div ref={printRef} className='space-y-4 bg-white text-black p-4 rounded-lg shadow-lg border'>
-                {/* Header */}
-                <div className="invoice-header-print">
-                    <div className="header-left text-left space-y-1">
-                        {logo ? <Image src={logo} alt="Logo" width={60} height={60} className='object-contain' /> : 
-                        <div className="w-16 h-16 border-2 border-dashed flex flex-col items-center justify-center text-gray-500 text-xs"><FileText className="w-6 h-6 mb-1"/><span>لوگوی شما</span></div>}
-                        <h2 className="font-bold text-base">{seller.name}</h2>
-                        <p className="text-xs text-gray-600">{seller.nationalId ? `شناسه ملی: ${seller.nationalId}` : ''}</p>
-                    </div>
-                    <div className="header-right text-right space-y-1 text-xs">
-                        <p><strong>تاریخ ثبت:</strong> {invoiceDate || '---'}</p>
-                        <p><strong>تاریخ سررسید:</strong> {dueDate || '---'}</p>
-                        <p><strong>شماره فاکتور:</strong> <span className='font-mono'>{invoiceNumber || '---'}</span></p>
-                    </div>
-                </div>
-                 <div className="h-1 bg-orange-400 w-full"></div>
-
-                {/* Buyer Info */}
-                <div className="buyer-info-print">
-                    <span><strong>خریدار:</strong> {buyer.name || '---'}</span>
-                    <span><strong>موبایل/تلفن:</strong> {buyer.phone || '---'}</span>
-                    <span><strong>آدرس:</strong> {buyer.address || '---'}</span>
-                </div>
-
-
-                {/* Items Table */}
-                <Table className='text-xs'>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[40px]">ردیف</TableHead>
-                            <TableHead>نام کالا/خدمات</TableHead>
-                            <TableHead>تعداد</TableHead>
-                            <TableHead>تخفیف (واحد)</TableHead>
-                            <TableHead>قیمت واحد</TableHead>
-                            <TableHead>جمع بدون تخفیف</TableHead>
-                            <TableHead>جمع کل</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {items.map((item, index) => {
-                            const totalWithoutDiscount = item.quantity * item.unitPrice;
-                            const total = totalWithoutDiscount - (item.quantity * item.discount);
-                            return (
-                                <TableRow key={item.id}>
-                                    <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{item.description}</TableCell>
-                                    <TableCell>{formatNumber(item.quantity)}</TableCell>
-                                    <TableCell className="text-red-600">{formatNumber(item.discount)}</TableCell>
-                                    <TableCell>{formatNumber(item.unitPrice)}</TableCell>
-                                    <TableCell>{formatNumber(totalWithoutDiscount)}</TableCell>
-                                    <TableCell className="font-semibold">{formatNumber(total)}</TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
-                </Table>
-                
-                 <div className="totals-container-print">
-                    <div>{/* Empty div for alignment */}</div>
-                     <div className="calc-section-print">
-                        <div><span>مجموع:</span><span className="font-mono">{formatNumber(subtotal)}</span></div>
-                        <div><span>ارزش افزوده ({formatNumber(taxRate)}٪):</span><span className="font-mono">{formatNumber(taxAmount)}</span></div>
-                        <div><span>تخفیف:</span><span className="font-mono">{formatNumber(totalDiscount)}</span></div>
-                        <div className="grand-total-print"><span>مبلغ نهایی:</span><span className="font-mono">{formatNumber(grandTotal)}</span></div>
-                    </div>
-                </div>
-
-                <div className="signatures-print">
-                  <div>مهر و امضاء فروشنده</div>
-                  <div>امضاء خریدار</div>
-                </div>
-
-                <div className="footer-print">
-                  <p>{seller.address}</p>
-                  <p>تلفن: {seller.phone} - ایمیل: {seller.email}</p>
-                </div>
-            </div>
+            {isOfficial ? renderVenusPreview() : <div/>}
         </div>
     </CardContent>
   );
 }
+
+    
 
     
 

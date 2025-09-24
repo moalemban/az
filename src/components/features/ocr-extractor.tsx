@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -8,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Copy, Sparkles, FileText, Upload, FileSignature } from 'lucide-react';
 import { extractTextFromFile, type OcrInput } from '@/ai/flows/ocr-flow';
+import { Input } from '@/components/ui/input';
 
 const MAX_FILE_SIZE_MB = 5;
 

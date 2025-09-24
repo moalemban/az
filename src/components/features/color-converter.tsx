@@ -21,6 +21,7 @@ const hexToRgb = (hex: string): string => {
   const r = parseInt(c.substring(0, 2), 16);
   const g = parseInt(c.substring(2, 4), 16);
   const b = parseInt(c.substring(4, 6), 16);
+  if (isNaN(r) || isNaN(g) || isNaN(b)) return '';
   return `${r}, ${g}, ${b}`;
 };
 
@@ -159,7 +160,7 @@ export default function ColorConverter() {
         <div className="relative">
           <Input 
             type="color" 
-            value={/^^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex) ? hex : '#000000'}
+            value={/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex) ? hex : '#000000'}
             onChange={e => { setHex(e.target.value.toUpperCase()); setLastChanged('hex'); }}
             className="w-24 h-24 p-2 cursor-pointer" 
           />

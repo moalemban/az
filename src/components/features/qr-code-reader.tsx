@@ -63,38 +63,24 @@ export default function QrCodeReader() {
               setError(null);
               toast({ title: 'موفق!', description: 'کد QR با موفقیت خوانده شد.', className: 'bg-green-500/10 text-green-600'});
               stopScan();
+              return; // Stop the loop
             }
         } catch (e) {
-            console.error("Error getting image data from canvas", e)
+            console.error("Error getting image data from canvas", e);
+            setError("خطا در پردازش تصویر دوربین.");
+            stopScan();
+            return; // Stop the loop
         }
       }
     }
-    if (isScanning) {
-        animationFrameRef.current = requestAnimationFrame(scanQrCode);
-    }
+    animationFrameRef.current = requestAnimationFrame(scanQrCode);
   }, [isScanning, stopScan, toast]);
   
-   useEffect(() => {
-    if (isScanning) {
-      animationFrameRef.current = requestAnimationFrame(scanQrCode);
-    } else {
-        if(animationFrameRef.current) {
-            cancelAnimationFrame(animationFrameRef.current)
-        }
-    }
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      stopScan();
-    };
-  }, [isScanning, scanQrCode, stopScan]);
-
-
   const startCamera = async () => {
     stopScan(); 
     setResult(null);
     setError(null);
+    setHasCameraPermission(null);
     
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setError("دوربین در این مرورگر پشتیبانی نمی‌شود.");
@@ -106,13 +92,20 @@ export default function QrCodeReader() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
         streamRef.current = stream;
-        setHasCameraPermission(true);
         
         if (videoRef.current) {
             videoRef.current.srcObject = stream;
-            // Wait for video to load metadata before trying to scan
             videoRef.current.onloadedmetadata = () => {
-                 setIsScanning(true); // Start scanning only after video is ready
+                videoRef.current?.play().then(() => {
+                    setHasCameraPermission(true);
+                    setIsScanning(true);
+                    animationFrameRef.current = requestAnimationFrame(scanQrCode);
+                }).catch(e => {
+                    console.error("Video play failed", e);
+                    setError("خطا در پخش ویدیوی دوربین.");
+                    setHasCameraPermission(false);
+                    stopScan();
+                });
             };
         }
     } catch (err) {
@@ -127,6 +120,7 @@ export default function QrCodeReader() {
     stopScan();
     setResult(null);
     setError(null);
+    setHasCameraPermission(null);
     
     const file = e.target.files?.[0];
     if (file) {
@@ -164,6 +158,12 @@ export default function QrCodeReader() {
     toast({ title: 'کپی شد!', description: 'محتوای کد در کلیپ‌بورد کپی شد.' });
   };
 
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      stopScan();
+    };
+  }, [stopScan]);
 
   return (
     <CardContent className="space-y-4">
@@ -180,30 +180,28 @@ export default function QrCodeReader() {
       </div>
 
         <div className="relative w-full aspect-video bg-muted/50 rounded-lg overflow-hidden flex items-center justify-center">
-            <video ref={videoRef} className={cn("w-full h-full object-cover", !isScanning && "hidden")} autoPlay playsInline muted/>
+            <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
             <canvas ref={canvasRef} className="hidden" />
             
             {!isScanning && (
                 <div className="text-center text-muted-foreground p-4">
-                     {hasCameraPermission === false && (
+                     {error ? (
                         <Alert variant="destructive" className="max-w-sm mx-auto">
                             <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>خطای دسترسی به دوربین</AlertTitle>
+                            <AlertTitle>خطا</AlertTitle>
                             <AlertDescription>
-                                برای اسکن، لطفاً دسترسی به دوربین را در تنظیمات مرورگر خود فعال کنید.
+                                {error}
                             </AlertDescription>
                         </Alert>
-                     )}
-                     {hasCameraPermission === null && (
+                     ) : result ? (
+                         <>
+                           <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
+                           <p className="mt-2">کد با موفقیت خوانده شد. برای اسکن مجدد، دکمه را بزنید.</p>
+                        </>
+                     ) : (
                         <>
                            <Video className="mx-auto h-12 w-12" />
                            <p className="mt-2">برای خواندن کد QR، دوربین را فعال کنید یا یک تصویر آپلود نمایید.</p>
-                        </>
-                     )}
-                      {hasCameraPermission === true && !isScanning && (
-                         <>
-                           <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
-                           <p className="mt-2">برای اسکن مجدد، دکمه را بزنید.</p>
                         </>
                      )}
                 </div>
@@ -221,18 +219,15 @@ export default function QrCodeReader() {
         </div>
 
 
-      {(result || error) && (
+      {(result) && (
         <div className="space-y-2">
             <Label>نتیجه</Label>
-            {result && (
-                <div className="relative">
-                    <Textarea readOnly value={result} className="min-h-[100px] text-base bg-green-400/10 text-green-800 dark:text-green-300 border-green-400/50" />
-                    <Button onClick={copyResult} size="icon" variant="ghost" className="absolute top-2 left-2 text-muted-foreground">
-                        <Copy className="h-5 w-5" />
-                    </Button>
-                </div>
-            )}
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            <div className="relative">
+                <Textarea readOnly value={result} className="min-h-[100px] text-base bg-green-400/10 text-green-800 dark:text-green-300 border-green-400/50" />
+                <Button onClick={copyResult} size="icon" variant="ghost" className="absolute top-2 left-2 text-muted-foreground">
+                    <Copy className="h-5 w-5" />
+                </Button>
+            </div>
         </div>
       )}
     </CardContent>

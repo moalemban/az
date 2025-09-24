@@ -70,6 +70,7 @@ const Base64Converter = dynamic(() => import('@/components/features/base64-conve
 const LinkShortener = dynamic(() => import('@/components/features/link-shortener'), { loading: () => <LoadingComponent /> });
 const SocialPostGenerator = dynamic(() => import('@/components/features/social-post-generator'), { loading: () => <LoadingComponent /> });
 const OcrExtractor = dynamic(() => import('@/components/features/ocr-extractor'), { loading: () => <LoadingComponent /> });
+const EventsCalendar = dynamic(() => import('@/components/features/events-calendar'), { loading: () => <LoadingComponent /> });
 
 
 const OthelloIcon = () => (
@@ -116,7 +117,7 @@ const toolCategories = [
        { id: 'legal-financial-chatbot', title: 'چت‌بات حقوقی و مالی', icon: <Bot className="h-8 w-8 text-blue-400" />, component: LegalFinancialChatbot },
        { id: 'text-to-speech', title: 'نوشتار به گفتار', icon: <BookText className="h-8 w-8 text-fuchsia-400" />, component: TextToSpeech },
        { id: 'social-post-generator', title: 'ربات تولید پست', icon: <RectangleEllipsis className="h-8 w-8 text-rose-400" />, component: SocialPostGenerator },
-       { id: 'ocr', title: 'استخراج متن از تصویر و PDF', icon: <ScanSearch className="h-8 w-8 text-indigo-400" />, component: OcrExtractor },
+       { id: 'ocr-extractor', title: 'استخراج متن از تصویر و PDF', icon: <ScanSearch className="h-8 w-8 text-indigo-400" />, component: OcrExtractor },
        { id: 'book-reader', title: 'کتابخوان آنلاین (ترجمه)', icon: <BookText className="h-8 w-8 text-lime-400" />, isWip: true },
        { id: 'pdf-word-converter', title: 'PDF ↔ Word (و بالعکس)', icon: <RectangleEllipsis className="h-8 w-8 text-blue-400" />, isWip: true },
        { id: 'pdf-image-converter', title: 'PDF ↔ عکس (و برعکس)', icon: <RectangleEllipsis className="h-8 w-8 text-green-400" />, isWip: true },
@@ -144,7 +145,7 @@ const toolCategories = [
       { id: 'age-calculator', title: 'محاسبه سن', icon: <Gift className="h-8 w-8 text-pink-400" />, component: AgeCalculator },
       { id: 'stopwatch', title: 'کرونومتر', icon: <Clock className="h-8 w-8 text-indigo-400" />, component: Stopwatch },
       { id: 'countdown-timer', title: 'تایمر شمارش معکوس', icon: <Hourglass className="h-8 w-8 text-blue-400" />, component: CountdownTimer },
-      { id: 'events-calendar', title: 'تقویم مناسبت‌ها', icon: <CalendarCheck className="h-8 w-8 text-rose-400" />, isExternal: true, href: 'https://www.google.com/calendar/embed?src=fa.ir%23holiday%40group.v.calendar.google.com&ctz=Asia%2FTehran' },
+      { id: 'events-calendar', title: 'تقویم مناسبت‌ها', icon: <CalendarCheck className="h-8 w-8 text-rose-400" />, component: EventsCalendar },
     ]
   },
     {
@@ -520,6 +521,7 @@ export default function Home() {
 
 
     
+
 
 
 

@@ -11,7 +11,7 @@ import { events as allEvents } from '@/lib/events';
 import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
 import { CalendarCheck, Info, Moon, Sun, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import 'react-day-picker/dist/style.css';
 import { cn } from '@/lib/utils';
 

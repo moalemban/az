@@ -6,7 +6,7 @@ import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Printer, FileText, Upload, ArrowLeft, Building, User } from 'lucide-react';
+import { Trash2, Plus, Printer, FileText, Upload, ArrowLeft, Building, User, Wand2, Star, Share2, Ticket, Settings, Briefcase, CreditCard, Send, TrendingUp } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import Image from 'next/image';
 import { Separator } from '../ui/separator';
@@ -14,6 +14,8 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Barcode from 'react-barcode';
 import { cn } from '@/lib/utils';
 import { numToWords } from '@/lib/utils';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
+import { Textarea } from '../ui/textarea';
 
 type InvoiceTemplate = 'venus_official' | 'classic_simple';
 type InvoiceMode = 'template_selector' | InvoiceTemplate;
@@ -30,7 +32,7 @@ type PartyInfo = {
   name: string;
   nationalId: string;
   address: string;
-  phone: string;
+  phone:string;
   email: string;
 };
 
@@ -48,7 +50,7 @@ const parseFormattedNumber = (str: string) => {
 
 
 const PartyInput = ({ title, party, setParty, isOfficial }: { title: string, party: PartyInfo, setParty: (value: PartyInfo) => void, isOfficial: boolean }) => (
-    <div className="space-y-3 glass-effect p-4 rounded-xl">
+    <div className="space-y-3">
       <h4 className="font-semibold text-lg text-foreground/90 border-b pb-2 flex items-center gap-2">
           {title === 'فروشنده' ? <Building className="w-5 h-5"/> : <User className="w-5 h-5"/>}
           {title}
@@ -83,23 +85,36 @@ const PartyInput = ({ title, party, setParty, isOfficial }: { title: string, par
       </div>
     </div>
   );
+
+  const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) => (
+    <div className="p-4 bg-muted/30 rounded-xl flex items-center gap-4">
+        <div className="text-primary bg-primary/10 p-3 rounded-lg">
+            {icon}
+        </div>
+        <div>
+            <h4 className="font-semibold">{title}</h4>
+            <p className="text-xs text-muted-foreground">{description}</p>
+        </div>
+    </div>
+);
   
 export default function InvoiceGenerator() {
   const [invoiceMode, setInvoiceMode] = useState<InvoiceMode>('template_selector');
 
-  const [seller, setSeller] = useState<PartyInfo>({ name: 'نام شرکت شما', nationalId: '۱۲۳۴۵۶۷۸۹۰', address: 'آدرس شما', phone: 'تلفن شما', email: 'ایمیل شما' });
-  const [buyer, setBuyer] = useState<PartyInfo>({ name: 'مرتضی محمدی', nationalId: '۰۹۸۷۶۵۴۳۲۱', address: 'آدرس خریدار', phone: '۰۹۱۲۱۲۳۴۵۶۷', email: 'morteza123@gmail.com' });
-  const [invoiceNumber, setInvoiceNumber] = useState('۱۳۹۹۰۰۰۰۱');
+  const [seller, setSeller] = useState<PartyInfo>({ name: 'شرکت شما', nationalId: '۱۲۳۴۵۶۷۸۹۰', address: 'آدرس فروشنده', phone: 'تلفن فروشنده', email: 'ایمیل فروشنده' });
+  const [buyer, setBuyer] = useState<PartyInfo>({ name: 'مشتری', nationalId: '۰۹۸۷۶۵۴۳۲۱', address: 'آدرس خریدار', phone: 'تلفن خریدار', email: 'ایمیل خریدار' });
+  const [invoiceNumber, setInvoiceNumber] = useState('۱۴۰۳-۰۰۱');
   const [invoiceDate, setInvoiceDate] = useState(new Date().toLocaleDateString('fa-IR-u-nu-latn', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/'));
   const [dueDate, setDueDate] = useState('');
   const [items, setItems] = useState<InvoiceItem[]>([
-      { id: 1, description: 'نام کالای ۱', quantity: 1, unitPrice: 10000, discount: 1000 },
-      { id: 2, description: 'نام کالای ۲', quantity: 2, unitPrice: 20000, discount: 1000 },
+      { id: 1, description: 'کالا/خدمات نمونه ۱', quantity: 2, unitPrice: 50000, discount: 5000 },
+      { id: 2, description: 'کالا/خدمات نمونه ۲', quantity: 1, unitPrice: 120000, discount: 0 },
   ]);
-  const [taxRate, setTaxRate] = useState(9);
+  const [taxRate, setTaxRate] = useState(10);
   const [description, setDescription] = useState('');
   const [logo, setLogo] = useState<string | null>(PlaceHolderImages.find(p => p.id === 'logo')?.imageUrl || null);
-  
+  const [signature, setSignature] = useState<string | null>(null);
+
   const printRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
@@ -115,13 +130,13 @@ export default function InvoiceGenerator() {
                 <style>
                     body { font-family: 'Vazirmatn', sans-serif; direction: rtl; background-color: #fff; color: #000; }
                     @page { size: A4; margin: 0; }
-                    .invoice-print-container { max-width: 800px; margin: auto; padding: 20px; font-size: 11px; border: 1px solid #333;}
+                    .invoice-print-container { max-width: 800px; margin: auto; padding: 20px; font-size: 11px; }
                     .no-print { display: none !important; }
                     .font-mono { font-family: monospace; }
                     img { max-width: 100%; height: auto; }
                     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
-                    th, td { border: 1px solid #333; padding: 6px; text-align: center; }
-                    th { background-color: #eee; }
+                    th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+                    th { background-color: #f2f2f2; }
                     td:nth-child(2) {text-align: right;}
 
                     /* Venus Template Styles */
@@ -142,12 +157,12 @@ export default function InvoiceGenerator() {
                     .classic-header h2 { font-size: 16px; margin: 0; }
                     .classic-header p { font-size: 12px; margin: 0; }
                     .classic-info-section { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 10px; }
-                    .classic-party-info { border: 1px solid #333; padding: 8px; border-radius: 4px; width: 100%;}
-                    .classic-totals { border: 1px solid #333; margin-top: -1px;}
+                    .classic-party-info { border: 1px solid #ddd; padding: 8px; border-radius: 4px; width: 48%;}
+                    .classic-totals { border: 1px solid #ddd; margin-top: -1px;}
                     .classic-totals-row { display: flex; justify-content: space-between; padding: 6px 8px; }
-                    .classic-totals-row:not(:last-child) { border-bottom: 1px solid #333; }
+                    .classic-totals-row:not(:last-child) { border-bottom: 1px solid #ddd; }
                     .classic-signatures { display: flex; justify-content: space-around; margin-top: 50px; font-size: 12px;}
-                    .classic-footer { text-align: center; font-size: 10px; border-top: 1px solid #333; padding-top: 8px; margin-top: 40px;}
+                    .classic-footer { text-align: center; font-size: 10px; border-top: 1px solid #ddd; padding-top: 8px; margin-top: 40px;}
 
                 </style>
             `;
@@ -184,12 +199,12 @@ export default function InvoiceGenerator() {
     setItems(newItems);
   };
   
-  const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (setter: (value: string | null) => void) => (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = (event) => {
-            setLogo(event.target?.result as string);
+            setter(event.target?.result as string);
         }
         reader.readAsDataURL(file);
     }
@@ -198,14 +213,16 @@ export default function InvoiceGenerator() {
   const subtotal = useMemo(() => items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0), [items]);
   const totalDiscount = useMemo(() => items.reduce((acc, item) => acc + (item.quantity * item.discount), 0), [items]);
   const subtotalAfterDiscount = subtotal - totalDiscount;
-  const taxAmount = useMemo(() => invoiceMode === 'venus_official' ? subtotalAfterDiscount * (taxRate / 100) : 0, [subtotalAfterDiscount, taxRate, invoiceMode]);
+  const taxAmount = useMemo(() => isOfficial ? subtotalAfterDiscount * (taxRate / 100) : 0, [subtotalAfterDiscount, taxRate, invoiceMode]);
   const grandTotal = useMemo(() => subtotalAfterDiscount + taxAmount, [subtotalAfterDiscount, taxAmount]);
   
+  const isOfficial = invoiceMode === 'venus_official';
+
   if (invoiceMode === 'template_selector') {
     return (
       <CardContent className="flex flex-col items-center gap-6 pt-10">
         <h3 className="text-xl font-bold text-center">جهت مشاهده یا دریافت فاکتور، قالب مدنظر خود را انتخاب نمایید:</h3>
-        <div className="grid sm:grid-cols-1 gap-6 w-full max-w-2xl">
+        <div className="grid sm:grid-cols-2 gap-6 w-full max-w-4xl">
           <button className="text-right p-6 rounded-2xl border-2 border-transparent hover:border-primary bg-muted/30 card-hover" onClick={() => setInvoiceMode('venus_official')}>
             <div className='flex justify-between items-center'>
                 <h4 className="text-lg font-semibold text-primary flex items-center gap-2"><FileText />قالب ونوس (رسمی)</h4>
@@ -229,11 +246,8 @@ export default function InvoiceGenerator() {
     );
   }
 
-  const isOfficial = invoiceMode === 'venus_official';
-
   const renderVenusPreview = () => (
     <div className='bg-white text-black p-4 rounded-lg shadow-lg border'>
-      {/* Header */}
       <div className="venus-header-print">
         <div className="venus-header-left text-left space-y-1">
           {logo ? <Image src={logo} alt="Logo" width={60} height={60} className='object-contain' /> : 
@@ -247,17 +261,13 @@ export default function InvoiceGenerator() {
           <p><strong>شماره فاکتور:</strong> <span className='font-mono'>{invoiceNumber || '---'}</span></p>
         </div>
       </div>
-      <div className="h-1 bg-orange-400 w-full"></div>
-
-      {/* Buyer Info */}
+      <div className="h-1 bg-primary w-full my-2"></div>
       <div className="venus-buyer-info-print text-xs">
         <span><strong>خریدار:</strong> {buyer.name || '---'}</span>
         <span><strong>موبایل/تلفن:</strong> {buyer.phone || '---'}</span>
         <span><strong>شناسه ملی:</strong> {buyer.nationalId || '---'}</span>
         <span><strong>آدرس:</strong> {buyer.address || '---'}</span>
       </div>
-
-      {/* Items Table */}
       <Table className='text-xs'>
         <TableHeader>
           <TableRow>
@@ -277,7 +287,7 @@ export default function InvoiceGenerator() {
             return (
               <TableRow key={item.id}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{item.description}</TableCell>
+                <TableCell className='text-right'>{item.description}</TableCell>
                 <TableCell>{formatNumber(item.quantity)}</TableCell>
                 <TableCell className="text-red-600">{formatNumber(item.discount)}</TableCell>
                 <TableCell>{formatNumber(item.unitPrice)}</TableCell>
@@ -288,7 +298,6 @@ export default function InvoiceGenerator() {
           })}
         </TableBody>
       </Table>
-      
       <div className="venus-totals-container-print">
         <div>
           <p className='font-bold text-xs'>توضیحات:</p>
@@ -296,17 +305,18 @@ export default function InvoiceGenerator() {
         </div>
         <div className="venus-calc-section-print">
           <div><span>مجموع:</span><span className="font-mono">{formatNumber(subtotal)}</span></div>
-          <div><span>تخفیف:</span><span className="font-mono">{formatNumber(totalDiscount)}</span></div>
-          <div><span>ارزش افزوده ({formatNumber(taxRate)}٪):</span><span className="font-mono">{formatNumber(taxAmount)}</span></div>
+          <div><span>تخفیف:</span><span className="font-mono text-red-600">{formatNumber(totalDiscount)}</span></div>
+          {isOfficial && <div><span>ارزش افزوده ({formatNumber(taxRate)}٪):</span><span className="font-mono">{formatNumber(taxAmount)}</span></div>}
           <div className="venus-grand-total-print"><span>مبلغ نهایی:</span><span className="font-mono">{formatNumber(grandTotal)}</span></div>
         </div>
       </div>
-
-      <div className="venus-signatures-print">
-        <div>مهر و امضاء فروشنده</div>
-        <div>امضاء خریدار</div>
+       <div className="venus-signatures-print">
+        <div className="flex flex-col items-center">
+            مهر و امضای فروشنده
+            {signature && <Image src={signature} alt="امضای فروشنده" width={100} height={50} className='object-contain mt-2'/>}
+        </div>
+        <div>امضای خریدار</div>
       </div>
-
       <div className="venus-footer-print">
         <p>{seller.address}</p>
         <p>تلفن: {seller.phone} - ایمیل: {seller.email}</p>
@@ -317,37 +327,35 @@ export default function InvoiceGenerator() {
   const renderClassicPreview = () => (
      <div className='bg-white text-black p-4 rounded-lg shadow-lg border'>
         <div className='classic-header'>
-            <h2>{seller.name || 'نام فروشنده'}</h2>
-            <p>{description || 'فاکتور فروش کالا و خدمات'}</p>
+            {logo && <Image src={logo} alt="لوگو" width={80} height={80} className="mx-auto mb-2 object-contain" />}
+            <h2 className="text-xl font-bold">{seller.name || 'نام فروشنده'}</h2>
+            <p className="text-sm">{description || 'فاکتور فروش کالا و خدمات'}</p>
         </div>
-
          <div className="classic-info-section">
-            <div className='space-y-1'>
-                 <p><strong>شماره:</strong> {invoiceNumber}</p>
-                 <p><strong>تاریخ:</strong> {invoiceDate}</p>
+            <div className='classic-party-info space-y-1'>
+                 <h3 className="font-bold border-b pb-1 mb-2">اطلاعات فروشنده</h3>
+                 <p><strong>نام:</strong> {seller.name}</p>
+                 <p><strong>تلفن/موبایل:</strong> {seller.phone}</p>
+                 <p><strong>آدرس:</strong> {seller.address}</p>
             </div>
-             <div className='classic-party-info'>
-                 <p><strong>نام خریدار:</strong> {buyer.name}</p>
+            <div className='classic-party-info space-y-1'>
+                 <h3 className="font-bold border-b pb-1 mb-2">اطلاعات خریدار</h3>
+                 <p><strong>نام:</strong> {buyer.name}</p>
                  <p><strong>تلفن/موبایل:</strong> {buyer.phone}</p>
                  <p><strong>آدرس:</strong> {buyer.address}</p>
-             </div>
+            </div>
         </div>
-
+         <div className="flex justify-between items-center text-xs mb-2">
+            <span>شماره فاکتور: {invoiceNumber}</span>
+            <span>تاریخ: {invoiceDate}</span>
+         </div>
         <Table className='text-xs'>
-            <TableHeader>
-                <TableRow>
-                    <TableHead className="w-[40px]">ردیف</TableHead>
-                    <TableHead>نام کالا/خدمات</TableHead>
-                    <TableHead>تعداد</TableHead>
-                    <TableHead>قیمت واحد</TableHead>
-                    <TableHead>جمع کل</TableHead>
-                </TableRow>
-            </TableHeader>
+            <TableHeader><TableRow><TableHead className="w-[40px]">ردیف</TableHead><TableHead>نام کالا/خدمات</TableHead><TableHead>تعداد</TableHead><TableHead>قیمت واحد</TableHead><TableHead>جمع کل</TableHead></TableRow></TableHeader>
             <TableBody>
                 {items.map((item, index) => (
                     <TableRow key={item.id}>
                         <TableCell>{index + 1}</TableCell>
-                        <TableCell>{item.description}</TableCell>
+                        <TableCell className='text-right'>{item.description}</TableCell>
                         <TableCell>{formatNumber(item.quantity)}</TableCell>
                         <TableCell>{formatNumber(item.unitPrice)}</TableCell>
                         <TableCell className="font-semibold">{formatNumber(item.unitPrice * item.quantity)}</TableCell>
@@ -355,23 +363,23 @@ export default function InvoiceGenerator() {
                 ))}
             </TableBody>
         </Table>
-
          <div className="grid grid-cols-[3fr,2fr] mt-0">
             <div className='border border-t-0 border-l-0 p-2 text-xs'>
                 <p>به حروف: {numToWords(String(grandTotal))} تومان</p>
             </div>
             <div className="classic-totals">
                 <div className="classic-totals-row"><span>مجموع:</span><span className="font-mono">{formatNumber(subtotal)}</span></div>
-                <div className="classic-totals-row"><span>تخفیف:</span><span className="font-mono">{formatNumber(totalDiscount)}</span></div>
+                <div className="classic-totals-row"><span>تخفیف:</span><span className="font-mono text-red-600">{formatNumber(totalDiscount)}</span></div>
                 <div className="classic-totals-row font-bold"><span>جمع کل:</span><span className="font-mono">{formatNumber(grandTotal)}</span></div>
             </div>
          </div>
-
          <div className="classic-signatures">
-            <p>امضاء فروشنده</p>
+            <div className="flex flex-col items-center">
+                امضاء فروشنده
+                {signature && <Image src={signature} alt="امضای فروشنده" width={100} height={50} className='object-contain mt-2'/>}
+            </div>
             <p>امضاء خریدار</p>
          </div>
-
          <div className="classic-footer">
             <p>آدرس: {seller.address} - تلفن: {seller.phone}</p>
          </div>
@@ -381,7 +389,6 @@ export default function InvoiceGenerator() {
   return (
     <CardContent className="space-y-6">
         <div className="grid lg:grid-cols-2 gap-8">
-            {/* Form Area */}
             <div className="space-y-6 no-print">
                 <div className="flex justify-between items-center">
                     <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
@@ -393,60 +400,89 @@ export default function InvoiceGenerator() {
                         تغییر قالب
                     </Button>
                 </div>
-                <div className="grid md:grid-cols-1 gap-4">
-                    <PartyInput title="فروشنده" party={seller} setParty={setSeller} isOfficial={isOfficial} />
-                    <PartyInput title="خریدار" party={buyer} setParty={setBuyer} isOfficial={isOfficial} />
-                </div>
-                <div className={cn("grid gap-4", isOfficial ? "md:grid-cols-3" : "md:grid-cols-2")}>
-                    <Input placeholder="شماره فاکتور" value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} />
-                    <Input placeholder="تاریخ ثبت" value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} />
-                    {isOfficial && <Input placeholder="تاریخ سررسید" value={dueDate} onChange={e => setDueDate(e.target.value)} />}
-                </div>
+                 <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3']} className="w-full space-y-4">
+                    <AccordionItem value="item-1" className="glass-effect rounded-xl border px-4">
+                        <AccordionTrigger><div className='flex items-center gap-2'><User className='w-5 h-5'/>اطلاعات طرفین</div></AccordionTrigger>
+                        <AccordionContent className="pt-4 space-y-4">
+                            <PartyInput title="فروشنده" party={seller} setParty={setSeller} isOfficial={isOfficial} />
+                            <Separator />
+                            <PartyInput title="خریدار" party={buyer} setParty={setBuyer} isOfficial={isOfficial} />
+                        </AccordionContent>
+                    </AccordionItem>
 
-                <div className="space-y-3 glass-effect p-4 rounded-xl">
-                    <h4 className="font-semibold text-lg text-foreground/90">ردیف‌های فاکتور</h4>
-                    {items.map((item) => (
-                        <div key={item.id} className={cn("grid gap-2 items-center", isOfficial ? "grid-cols-[1fr,80px,110px,100px,auto]" : "grid-cols-[1fr,80px,110px,100px,auto]")}>
-                            <Input placeholder={`شرح کالا`} value={item.description} onChange={e => handleItemChange(item.id, 'description', e.target.value)} />
-                            <Input type="text" placeholder="تعداد" value={formatNumber(item.quantity)} onChange={e => handleItemChange(item.id, 'quantity', e.target.value)} className="text-center" dir="ltr"/>
-                            <Input type="text" placeholder="قیمت واحد" value={formatNumber(item.unitPrice)} onChange={e => handleItemChange(item.id, 'unitPrice', e.target.value)} className="text-center" dir="ltr"/>
-                            <Input type="text" placeholder="تخفیف" value={formatNumber(item.discount)} onChange={e => handleItemChange(item.id, 'discount', e.target.value)} className="text-center" dir="ltr"/>
-                            <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="text-destructive"><Trash2 className="w-5 h-5"/></Button>
-                        </div>
-                    ))}
-                    <Button onClick={addItem} variant="outline" size="sm" className="mt-2"><Plus className="w-4 h-4 ml-2"/> افزودن ردیف</Button>
-                </div>
-
-                 <div className="grid grid-cols-1 gap-4">
-                    {isOfficial && (
-                      <div className="space-y-2">
-                        <Label>مالیات بر ارزش افزوده (%)</Label>
-                        <Input type="number" value={taxRate} onChange={e => setTaxRate(parseFloat(e.target.value) || 0)} className="text-center"/>
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                        <Label>توضیحات</Label>
-                        <Input placeholder="توضیحات اضافی فاکتور" value={description} onChange={e => setDescription(e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>لوگو</Label>
-                      <Input type="file" accept="image/*" onChange={handleLogoUpload} />
-                    </div>
-                </div>
-
+                    <AccordionItem value="item-2" className="glass-effect rounded-xl border px-4">
+                        <AccordionTrigger><div className='flex items-center gap-2'><Briefcase className='w-5 h-5'/>اقلام فاکتور</div></AccordionTrigger>
+                        <AccordionContent className="pt-4 space-y-3">
+                             {items.map((item, i) => (
+                                <div key={item.id} className="grid gap-2 items-end grid-cols-[1fr,80px,110px,100px,auto]">
+                                    <Input placeholder={`شرح کالا ${i+1}`} value={item.description} onChange={e => handleItemChange(item.id, 'description', e.target.value)} />
+                                    <Input type="text" placeholder="تعداد" value={formatNumber(item.quantity)} onChange={e => handleItemChange(item.id, 'quantity', e.target.value)} className="text-center" dir="ltr"/>
+                                    <Input type="text" placeholder="قیمت واحد" value={formatNumber(item.unitPrice)} onChange={e => handleItemChange(item.id, 'unitPrice', e.target.value)} className="text-center" dir="ltr"/>
+                                    <Input type="text" placeholder="تخفیف" value={formatNumber(item.discount)} onChange={e => handleItemChange(item.id, 'discount', e.target.value)} className="text-center" dir="ltr"/>
+                                    <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="text-destructive"><Trash2 className="w-5 h-5"/></Button>
+                                </div>
+                            ))}
+                            <Button onClick={addItem} variant="outline" size="sm" className="mt-2"><Plus className="w-4 h-4 ml-2"/> افزودن ردیف</Button>
+                        </AccordionContent>
+                    </AccordionItem>
+                     <AccordionItem value="item-3" className="glass-effect rounded-xl border px-4">
+                        <AccordionTrigger><div className='flex items-center gap-2'><Settings className='w-5 h-5'/>تنظیمات و جزئیات</div></AccordionTrigger>
+                        <AccordionContent className="pt-4 space-y-4">
+                             <div className={cn("grid gap-4", isOfficial ? "md:grid-cols-3" : "md:grid-cols-2")}>
+                                <Input placeholder="شماره فاکتور" value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} />
+                                <Input placeholder="تاریخ ثبت" value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} />
+                                {isOfficial && <Input placeholder="تاریخ سررسید" value={dueDate} onChange={e => setDueDate(e.target.value)} />}
+                            </div>
+                            {isOfficial && (
+                              <div className="space-y-2">
+                                <Label>مالیات بر ارزش افزوده (%)</Label>
+                                <Input type="number" value={taxRate} onChange={e => setTaxRate(parseFloat(e.target.value) || 0)} className="text-center"/>
+                              </div>
+                            )}
+                            <div className="space-y-2">
+                                <Label>توضیحات</Label>
+                                <Textarea placeholder="توضیحات اضافی فاکتور" value={description} onChange={e => setDescription(e.target.value)} />
+                            </div>
+                             <div className="space-y-2">
+                              <Label>لوگو</Label>
+                              <Input type="file" accept="image/*" onChange={handleFileUpload(setLogo)} />
+                            </div>
+                             <div className="space-y-2">
+                              <Label>تصویر امضا</Label>
+                              <Input type="file" accept="image/*" onChange={handleFileUpload(setSignature)} />
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
                 <Button onClick={handlePrint} className="w-full h-12 text-lg"><Printer className="w-5 h-5 ml-2"/> چاپ فاکتور</Button>
             </div>
             
-            {/* Printable Area */}
-            <div ref={printRef} className='hidden print:block'>
-               {isOfficial ? renderVenusPreview() : renderClassicPreview()}
-            </div>
-             <div className='lg:block hidden'>
-               {isOfficial ? renderVenusPreview() : renderClassicPreview()}
+            <div className='space-y-6'>
+                <div className='lg:sticky top-28'>
+                     <div ref={printRef} className='hidden print:block'>
+                       {isOfficial ? renderVenusPreview() : renderClassicPreview()}
+                    </div>
+                     <div className='hidden lg:block'>
+                       {isOfficial ? renderVenusPreview() : renderClassicPreview()}
+                    </div>
+                </div>
+
+                <div className='space-y-3 no-print'>
+                    <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
+                        <Wand2 className="w-6 h-6 text-primary" />
+                        امکانات فاکتورساز
+                    </h3>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                        <FeatureCard icon={<CreditCard className="w-6 h-6"/>} title="پرداخت آنلاین فاکتور" description="اتصال به درگاه پرداخت مستقیم و واسط" />
+                        <FeatureCard icon={<TrendingUp className="w-6 h-6"/>} title="گزارش‌گیری و نمودارها" description="گزارش فروش هر کالا و خدمات" />
+                        <FeatureCard icon={<Star className="w-6 h-6"/>} title="امضای دیجیتال" description="دریافت امضای دیجیتال فروشنده و خریدار" />
+                        <FeatureCard icon={<Ticket className="w-6 h-6"/>} title="کد تخفیف" description="تعریف کد تخفیف به صورت مبلغ یا درصد" />
+                        <FeatureCard icon={<Send className="w-6 h-6"/>} title="ارسال پیامک و ایمیل" description="ارسال اطلاعات فاکتور از طریق ایمیل و پیامک" />
+                        <FeatureCard icon={<Share2 className="w-6 h-6"/>} title="اشتراک‌گذاری فاکتور" description="اشتراک‌گذاری فاکتور در شبکه‌های اجتماعی" />
+                    </div>
+                </div>
             </div>
         </div>
     </CardContent>
   );
 }
-
-    

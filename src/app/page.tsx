@@ -64,7 +64,6 @@ const OthelloGame = dynamic(() => import('@/components/features/othello-game'), 
 const TextToSpeech = dynamic(() => import('@/components/features/text-to-speech'), { loading: () => <LoadingComponent /> });
 const Game2048 = dynamic(() => import('@/components/features/game-2048'), { loading: () => <LoadingComponent /> });
 const LotteryTool = dynamic(() => import('@/components/features/lottery-tool'), { loading: () => <LoadingComponent /> });
-const EscapeFromTheBill = dynamic(() => import('@/components/features/escape-from-the-bill'), { loading: () => <LoadingComponent /> });
 const InvoiceGenerator = dynamic(() => import('@/components/features/invoice-generator'), { loading: () => <LoadingComponent /> });
 const ColorConverter = dynamic(() => import('@/components/features/color-converter'), { loading: () => <LoadingComponent /> });
 const Base64Converter = dynamic(() => import('@/components/features/base64-converter'), { loading: () => <LoadingComponent /> });
@@ -185,7 +184,7 @@ const toolCategories = [
       { id: 'simon-says', title: 'بازی سایمون', icon: <BrainCircuit className="h-8 w-8 text-purple-500" />, component: SimonSays, mode: 'تک نفره' },
       { id: 'othello-game', title: 'بازی اتللو', icon: <OthelloIcon />, component: OthelloGame, mode: 'دو حالته' },
       { id: '2048', title: 'بازی 2048', icon: <RectangleEllipsis className="h-8 w-8 text-indigo-400" />, component: Game2048, mode: 'تک نفره' },
-      { id: 'escape-the-bill', title: 'فرار از قبض برق', icon: <RectangleEllipsis className="h-8 w-8 text-yellow-500" />, component: EscapeFromTheBill, mode: 'تک نفره' },
+      { id: 'escape-the-bill', title: 'فرار از قبض برق', icon: <RectangleEllipsis className="h-8 w-8 text-yellow-500" />, isWip: true },
       { id: 'minesweeper-3d', title: 'Minesweeper Extreme 3D', icon: <Bomb className="h-8 w-8 text-gray-400" />, isWip: true },
       { id: 'archaeology-game', title: 'بازی زیرخاکی', icon: <Ghost className="h-8 w-8 text-yellow-400" />, isWip: true },
       { id: 'pac-man', title: 'Pac-Man Glow', icon: <Ghost className="h-8 w-8 text-yellow-400" />, isWip: true },
@@ -548,3 +547,5 @@ export default function Home() {
 
 
   
+
+    

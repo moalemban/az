@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,6 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 
 const toBase64 = (str: string) => {
     try {
+        // First, encode the string to UTF-8, then to Base64
         return btoa(unescape(encodeURIComponent(str)));
     } catch (e) {
         return 'خطا در انکود کردن متن. ممکن است شامل کاراکترهای نامعتبر باشد.';
@@ -20,6 +21,7 @@ const toBase64 = (str: string) => {
 
 const fromBase64 = (str: string) => {
     try {
+        // Decode from Base64, then from UTF-8
         return decodeURIComponent(escape(atob(str)));
     } catch (e) {
         return 'رشته Base64 نامعتبر است.';
@@ -56,28 +58,44 @@ export default function Base64Converter() {
         const reader = new FileReader();
         reader.onload = (event) => {
             const result = event.target?.result as string;
-            setEncodedFileContent(result.split(',')[1]);
+            // The result includes the full Data URI, we just need the base64 part.
+            const base64Data = result.split(',')[1];
+            setEncodedFileContent(base64Data);
         };
+        reader.onerror = () => {
+             toast({ title: 'خطا', description: 'خطا در خواندن فایل.', variant: 'destructive'});
+        }
         reader.readAsDataURL(selectedFile);
     }
   };
 
   const handleDownload = () => {
-    if (!base64ToDecode) {
+    if (!base64ToDecode.trim()) {
       toast({ title: 'خطا', description: 'هیچ داده Base64 برای دانلود وجود ندارد.', variant: 'destructive'});
       return;
     }
     try {
-        const byteCharacters = atob(base64ToDecode);
+        const byteCharacters = atob(base64ToDecode.trim());
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {
             byteNumbers[i] = byteCharacters.charCodeAt(i);
         }
         const byteArray = new Uint8Array(byteNumbers);
         
-        // Simple file type detection, can be improved
-        const mime = base64ToDecode.startsWith('data:') ? base64ToDecode.split(',')[0].split(':')[1].split(';')[0] : 'application/octet-stream';
-        const extension = mime.split('/')[1] || 'bin';
+        let mime = 'application/octet-stream';
+        let extension = 'bin';
+        
+        // Basic MIME type detection from the first few bytes (magic numbers)
+        if (byteArray.length > 3 && byteArray[0] === 0x89 && byteArray[1] === 0x50 && byteArray[2] === 0x4E && byteArray[3] === 0x47) {
+            mime = 'image/png';
+            extension = 'png';
+        } else if (byteArray.length > 1 && byteArray[0] === 0xFF && byteArray[1] === 0xD8) {
+            mime = 'image/jpeg';
+            extension = 'jpg';
+        } else if (byteArray.length > 3 && byteArray[0] === 0x25 && byteArray[1] === 0x50 && byteArray[2] === 0x44 && byteArray[3] === 0x46) {
+            mime = 'application/pdf';
+            extension = 'pdf';
+        }
 
         const blob = new Blob([byteArray], { type: mime });
         const url = URL.createObjectURL(blob);
@@ -184,4 +202,3 @@ export default function Base64Converter() {
       </Tabs>
   );
 }
-

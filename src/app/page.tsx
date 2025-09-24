@@ -71,6 +71,8 @@ const LinkShortener = dynamic(() => import('@/components/features/link-shortener
 const SocialPostGenerator = dynamic(() => import('@/components/features/social-post-generator'), { loading: () => <LoadingComponent /> });
 const OcrExtractor = dynamic(() => import('@/components/features/ocr-extractor'), { loading: () => <LoadingComponent /> });
 const EventsCalendar = dynamic(() => import('@/components/features/events-calendar'), { loading: () => <LoadingComponent /> });
+const PdfWordConverter = dynamic(() => import('@/components/features/pdf-word-converter'), { loading: () => <LoadingComponent /> });
+const PdfImageConverter = dynamic(() => import('@/components/features/pdf-image-converter'), { loading: () => <LoadingComponent /> });
 
 
 const OthelloIcon = () => (
@@ -119,8 +121,8 @@ const toolCategories = [
        { id: 'social-post-generator', title: 'هوش مصنوعی', icon: <RectangleEllipsis className="h-8 w-8 text-rose-400" />, component: SocialPostGenerator },
        { id: 'ocr-extractor', title: 'استخراج متن از تصویر و PDF', icon: <ScanSearch className="h-8 w-8 text-indigo-400" />, component: OcrExtractor },
        { id: 'book-reader', title: 'کتابخوان آنلاین (ترجمه)', icon: <BookText className="h-8 w-8 text-lime-400" />, isWip: true },
-       { id: 'pdf-word-converter', title: 'PDF ↔ Word (و بالعکس)', icon: <RectangleEllipsis className="h-8 w-8 text-blue-400" />, isWip: true },
-       { id: 'pdf-image-converter', title: 'PDF ↔ عکس (و برعکس)', icon: <RectangleEllipsis className="h-8 w-8 text-green-400" />, isWip: true },
+       { id: 'pdf-word-converter', title: 'PDF ↔ Word (و بالعکس)', icon: <RectangleEllipsis className="h-8 w-8 text-blue-400" />, component: PdfWordConverter },
+       { id: 'pdf-image-converter', title: 'PDF ↔ عکس (و برعکس)', icon: <RectangleEllipsis className="h-8 w-8 text-green-400" />, component: PdfImageConverter },
     ]
   },
   {
@@ -521,6 +523,7 @@ export default function Home() {
 
 
     
+
 
 
 

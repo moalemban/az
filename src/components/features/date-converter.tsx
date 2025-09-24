@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import type { Locale } from 'date-fns';
 import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -19,6 +20,7 @@ export default function DateConverter() {
   
   const [gregorianDate, setGregorianDate] = useState<Date | undefined>();
   const [gregorianPopoverOpen, setGregorianPopoverOpen] = useState(false);
+  const [enUSLocale, setEnUSLocale] = useState<Locale | undefined>(undefined);
 
   const [shamsiYear, setShamsiYear] = useState<number>(0);
   const [shamsiMonth, setShamsiMonth] = useState<number>(0);
@@ -28,6 +30,9 @@ export default function DateConverter() {
   const [convertedWeekday, setConvertedWeekday] = useState('');
 
   useEffect(() => {
+    // Dynamically load the locale to avoid SSR issues
+    import('date-fns/locale/en-US').then(locale => setEnUSLocale(locale));
+    
     // Set initial dates only on the client-side to avoid hydration mismatch
     const today = new Date();
     setGregorianDate(today);
@@ -64,6 +69,7 @@ export default function DateConverter() {
 
   useEffect(() => {
     performConversion();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, gregorianDate, shamsiYear, shamsiMonth, shamsiDay]);
 
 
@@ -96,6 +102,7 @@ export default function DateConverter() {
                       mode="single" 
                       selected={gregorianDate} 
                       onSelect={handleDateSelect}
+                      locale={enUSLocale}
                       captionLayout="dropdown-buttons"
                       fromYear={1900}
                       toYear={new Date().getFullYear() + 10}

@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import PWAInstallPrompt from '@/components/layout/pwa-install-prompt';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import Link from 'next/link';
 
 const LoadingComponent = () => (
     <div className="flex items-center justify-center p-8 text-muted-foreground">
@@ -52,16 +53,10 @@ const ShebaConverter = dynamic(() => import('@/components/features/sheba-convert
 const QrCodeGenerator = dynamic(() => import('@/components/features/qr-code-generator'), { loading: () => <LoadingComponent /> });
 const QrCodeReader = dynamic(() => import('@/components/features/qr-code-reader'), { loading: () => <LoadingComponent /> });
 const TicTacToe = dynamic(() => import('@/components/features/tic-tac-toe'), { loading: () => <LoadingComponent /> });
-const RockPaperScissors = dynamic(() => import('@/components/features/rock-paper-scissors'), { loading: () => <LoadingComponent /> });
-const Hangman = dynamic(() => import('@/components/features/hangman'), { loading: () => <LoadingComponent /> });
 const LegalFinancialChatbot = dynamic(() => import('@/components/features/legal-financial-chatbot'), { loading: () => <LoadingComponent /> });
 const SignatureGenerator = dynamic(() => import('@/components/features/signature-generator'), { loading: () => <LoadingComponent /> });
 const MemoryGame = dynamic(() => import('@/components/features/memory-game'), { loading: () => <LoadingComponent /> });
 const GuessTheNumber = dynamic(() => import('@/components/features/guess-the-number'), { loading: () => <LoadingComponent /> });
-const ConnectFour = dynamic(() => import('@/components/features/connect-four'), { loading: () => <LoadingComponent /> });
-const SimonSays = dynamic(() => import('@/components/features/simon-says'), { loading: () => <LoadingComponent /> });
-const OthelloGame = dynamic(() => import('@/components/features/othello-game'), { loading: () => <LoadingComponent /> });
-const TextToSpeech = dynamic(() => import('@/components/features/text-to-speech'), { loading: () => <LoadingComponent /> });
 const Game2048 = dynamic(() => import('@/components/features/game-2048'), { loading: () => <LoadingComponent /> });
 const LotteryTool = dynamic(() => import('@/components/features/lottery-tool'), { loading: () => <LoadingComponent /> });
 const InvoiceGenerator = dynamic(() => import('@/components/features/invoice-generator'), { loading: () => <LoadingComponent /> });
@@ -117,7 +112,7 @@ const toolCategories = [
     tools: [
        { id: 'text-summarizer', title: 'خلاصه‌ساز هوشمند', icon: <BookText className="h-8 w-8 text-cyan-400" />, component: TextSummarizer },
        { id: 'legal-financial-chatbot', title: 'چت‌بات حقوقی و مالی', icon: <Bot className="h-8 w-8 text-blue-400" />, component: LegalFinancialChatbot },
-       { id: 'text-to-speech', title: 'نوشتار به گفتار', icon: <BookText className="h-8 w-8 text-fuchsia-400" />, component: TextToSpeech },
+       { id: 'text-to-speech', title: 'نوشتار به گفتار', icon: <BookText className="h-8 w-8 text-fuchsia-400" />, isWip: true },
        { id: 'social-post-generator', title: 'هوش مصنوعی', icon: <RectangleEllipsis className="h-8 w-8 text-rose-400" />, component: SocialPostGenerator },
        { id: 'ocr-extractor', title: 'استخراج متن از تصویر و PDF', icon: <ScanSearch className="h-8 w-8 text-indigo-400" />, component: OcrExtractor },
        { id: 'contract-generator', title: 'مولد قرارداد هوشمند', icon: <FileSignature className="h-8 w-8 text-emerald-400" />, isWip: true },
@@ -176,29 +171,9 @@ const toolCategories = [
     icon: <Gamepad2 className="h-6 w-6 text-primary-foreground" />,
     tools: [
       { id: 'tic-tac-toe', title: 'بازی دوز', icon: <Puzzle className="h-8 w-8 text-red-400" />, component: TicTacToe, mode: 'دو حالته' },
-      { id: 'rock-paper-scissors', title: 'سنگ کاغذ قیچی', icon: <RectangleEllipsis className="h-8 w-8 text-yellow-400" />, component: RockPaperScissors, mode: 'دو حالته' },
-      { id: 'hangman', title: 'حدس کلمه', icon: <Brain className="h-8 w-8 text-green-400" />, component: Hangman, mode: 'مقابل سیستم' },
-      { id: 'memory-game', title: 'بازی حافظه', icon: <MemoryStick className="h-8 w-8 text-sky-400" />, component: MemoryGame, mode: 'تک نفره' },
       { id: 'guess-the-number', title: 'حدس عدد', icon: <Hash className="h-8 w-8 text-fuchsia-400" />, component: GuessTheNumber, mode: 'مقابل سیستم' },
-      { id: 'connect-four', title: 'چهار در یک ردیف', icon: <RectangleEllipsis className="h-8 w-8 text-blue-500" />, component: ConnectFour, mode: 'دو نفره' },
-      { id: 'simon-says', title: 'بازی سایمون', icon: <BrainCircuit className="h-8 w-8 text-purple-500" />, component: SimonSays, mode: 'تک نفره' },
-      { id: 'othello-game', title: 'بازی اتللو', icon: <OthelloIcon />, component: OthelloGame, mode: 'دو حالته' },
+      { id: 'memory-game', title: 'بازی حافظه', icon: <MemoryStick className="h-8 w-8 text-sky-400" />, component: MemoryGame, mode: 'تک نفره' },
       { id: '2048', title: 'بازی 2048', icon: <RectangleEllipsis className="h-8 w-8 text-indigo-400" />, component: Game2048, mode: 'تک نفره' },
-      { id: 'escape-the-bill', title: 'فرار از قبض برق', icon: <RectangleEllipsis className="h-8 w-8 text-yellow-500" />, isWip: true },
-      { id: 'minesweeper-3d', title: 'Minesweeper Extreme 3D', icon: <Bomb className="h-8 w-8 text-gray-400" />, isWip: true },
-      { id: 'archaeology-game', title: 'بازی زیرخاکی', icon: <Ghost className="h-8 w-8 text-yellow-400" />, isWip: true },
-      { id: 'pac-man', title: 'Pac-Man Glow', icon: <Ghost className="h-8 w-8 text-yellow-400" />, isWip: true },
-      { id: 'air-hockey', title: 'Air Hockey Neon', icon: <CircleDot className="h-8 w-8 text-cyan-400" />, isWip: true },
-      { id: 'tower-defense', title: 'Tower Defense Lite', icon: <Castle className="h-8 w-8 text-gray-500" />, isWip: true },
-      { id: 'space-invaders', title: 'Space Invaders 2025', icon: <Rocket className="h-8 w-8 text-slate-400" />, isWip: true },
-      { id: 'carrom-board', title: 'Carrom Board 2D', icon: <Target className="h-8 w-8 text-red-500" />, isWip: true },
-      { id: 'battleship', title: 'BattleShip Grid War', icon: <Ship className="h-8 w-8 text-blue-600" />, isWip: true },
-      { id: 'pinball', title: 'Pinball Retro-Fusion', icon: <ArrowDownRight className="h-8 w-8 text-pink-500" />, isWip: true },
-      { id: 'checkers', title: 'Checkers Royal', icon: <Square className="h-8 w-8 text-black" />, isWip: true },
-      { id: 'word-hunt', title: 'Word Hunt Blitz', icon: <Search className="h-8 w-8 text-orange-500" />, isWip: true },
-      { id: 'snake', title: 'مار نئونی', icon: <SnakeIcon />, isWip: true },
-      { id: 'chess', title: 'شطرنج', icon: <Crown className="h-8 w-8 text-yellow-500" />, isWip: true },
-	  { id: 'breakout-neon', title: 'Breakout Neon', icon: <RectangleEllipsis className="h-8 w-8 text-orange-400" />, isWip: true },
     ]
   },
   {
@@ -282,6 +257,16 @@ export default function Home() {
                     )}
                     )}
                   </div>
+                   {category.title === 'سرگرمی و بازی' && (
+                    <div className="mt-4 text-center">
+                      <Link href="/games">
+                        <Button variant="secondary" className="h-12 px-6 text-base">
+                          مشاهده همه بازی‌ها
+                          <ArrowLeft className="mr-2 h-5 w-5" />
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -547,5 +532,7 @@ export default function Home() {
 
 
   
+
+    
 
     

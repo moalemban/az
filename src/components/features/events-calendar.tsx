@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import type { Locale } from 'date-fns';
+import { enUS, faIR } from 'date-fns/locale';
 import { CardContent } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { gregorianToJalali, jalaliToGregorian } from '@/lib/date-converter';
@@ -17,20 +18,6 @@ type CalendarSystem = 'shamsi' | 'gregorian' | 'hijri';
 export default function EventsCalendar() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [calendarSystem, setCalendarSystem] = useState<CalendarSystem>('shamsi');
-  const [locale, setLocale] = useState<Locale | undefined>(undefined);
-
-  useEffect(() => {
-    async function loadLocale() {
-      if (calendarSystem === 'shamsi') {
-        const faIR = await import('date-fns/locale/fa-IR');
-        setLocale(faIR);
-      } else {
-        const enUS = await import('date-fns/locale/en-US');
-        setLocale(enUS);
-      }
-    }
-    loadLocale();
-  }, [calendarSystem]);
   
   useEffect(() => {
     setDate(new Date());
@@ -105,14 +92,6 @@ export default function EventsCalendar() {
       )
   }
 
-  if (!locale) {
-    return (
-      <CardContent className="flex items-center justify-center h-96">
-        <p>در حال بارگذاری تقویم...</p>
-      </CardContent>
-    );
-  }
-
   return (
     <CardContent className="flex flex-col md:flex-row gap-6 items-start justify-center">
         <div className="w-full md:w-auto flex flex-col items-center gap-4">
@@ -127,7 +106,7 @@ export default function EventsCalendar() {
                 onSelect={handleDateSelect}
                 className="rounded-md border glass-effect"
                 dir={calendarSystem === 'shamsi' ? 'rtl' : 'ltr'}
-                locale={locale}
+                locale={calendarSystem === 'shamsi' ? faIR : enUS}
                 modifiers={eventDays}
                 modifiersClassNames={{
                     isHoliday: 'text-red-500',

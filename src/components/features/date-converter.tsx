@@ -6,8 +6,9 @@ import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar as CalendarIcon, CalendarDays, ArrowRightLeft } from 'lucide-react';
+import { Calendar as CalendarIcon, ArrowRightLeft } from 'lucide-react';
 import { format } from 'date-fns';
+import { enUS, faIR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -20,7 +21,6 @@ export default function DateConverter() {
   
   const [gregorianDate, setGregorianDate] = useState<Date | undefined>();
   const [gregorianPopoverOpen, setGregorianPopoverOpen] = useState(false);
-  const [enUSLocale, setEnUSLocale] = useState<Locale | undefined>(undefined);
 
   const [shamsiYear, setShamsiYear] = useState<number>(0);
   const [shamsiMonth, setShamsiMonth] = useState<number>(0);
@@ -30,10 +30,6 @@ export default function DateConverter() {
   const [convertedWeekday, setConvertedWeekday] = useState('');
 
   useEffect(() => {
-    // Dynamically load the locale to avoid SSR issues
-    import('date-fns/locale/en-US').then(locale => setEnUSLocale(locale.default));
-    
-    // Set initial dates only on the client-side to avoid hydration mismatch
     const today = new Date();
     setGregorianDate(today);
     const { jy, jm, jd } = gregorianToJalali(today);
@@ -47,18 +43,14 @@ export default function DateConverter() {
       if (mode === 'gregorian-to-shamsi' && gregorianDate) {
         const { jy, jm, jd } = gregorianToJalali(gregorianDate);
         const weekday = new Intl.DateTimeFormat('fa-IR', { weekday: 'long' }).format(gregorianDate);
-        setConvertedDate(`${jy} / ${jm} / ${jd}`);
+        setConvertedDate(`${jy} / ${String(jm).padStart(2, '0')} / ${String(jd).padStart(2, '0')}`);
         setConvertedWeekday(weekday);
       } else if (mode === 'shamsi-to-gregorian') {
         if(shamsiYear && shamsiMonth && shamsiDay && shamsiYear > 0 && shamsiMonth > 0 && shamsiDay > 0) {
           const { gy, gm, gd } = jalaliToGregorian(shamsiYear, shamsiMonth, shamsiDay);
           const converted = new Date(gy, gm - 1, gd);
           const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(converted);
-          if (enUSLocale) {
-            setConvertedDate(format(converted, 'PPP', { locale: enUSLocale }));
-          } else {
-            setConvertedDate(format(converted, 'PPP'));
-          }
+          setConvertedDate(format(converted, 'PPP', { locale: enUS }));
           setConvertedWeekday(weekday);
         } else {
             setConvertedDate('تاریخ شمسی را کامل وارد کنید');
@@ -74,7 +66,7 @@ export default function DateConverter() {
   useEffect(() => {
     performConversion();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, gregorianDate, shamsiYear, shamsiMonth, shamsiDay, enUSLocale]);
+  }, [mode, gregorianDate, shamsiYear, shamsiMonth, shamsiDay]);
 
 
   const handleDateSelect = (d: Date | undefined) => {
@@ -98,7 +90,7 @@ export default function DateConverter() {
                   <PopoverTrigger asChild>
                     <Button variant={'outline'} className={cn('w-full justify-start text-left font-normal h-12 text-base', !gregorianDate && 'text-muted-foreground')} >
                       <CalendarIcon className="ml-2 h-5 w-5" />
-                      {gregorianDate && enUSLocale ? format(gregorianDate, 'PPP', { locale: enUSLocale }) : <span>یک تاریخ انتخاب کنید</span>}
+                      {gregorianDate ? format(gregorianDate, 'PPP', { locale: enUS }) : <span>یک تاریخ انتخاب کنید</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 glass-effect" align="start">
@@ -106,7 +98,7 @@ export default function DateConverter() {
                       mode="single" 
                       selected={gregorianDate} 
                       onSelect={handleDateSelect}
-                      locale={enUSLocale}
+                      locale={enUS}
                       captionLayout="dropdown-buttons"
                       fromYear={1900}
                       toYear={new Date().getFullYear() + 10}

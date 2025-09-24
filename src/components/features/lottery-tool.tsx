@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -83,7 +84,10 @@ export default function LotteryTool() {
                 id="participants"
                 value={participants}
                 onChange={(e) => setParticipants(e.target.value)}
-                placeholder="حسین&#x0A;علی&#x0A;زهرا&#x0A;..."
+                placeholder="حسین
+علی
+زهرا
+..."
                 className="min-h-[200px] text-base"
             />
         </div>

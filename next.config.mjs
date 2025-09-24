@@ -4,15 +4,19 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'uploadkon.ir',
-        port: '',
-        pathname: '/uploads/**',
+        hostname: 'i.imgur.com',
       },
-       {
+      {
+        protocol: 'https',
+        hostname: 'uploadkon.ir',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.arzdigital.com',
+      },
+      {
         protocol: 'https',
         hostname: 'static.idpay.ir',
-        port: '',
-        pathname: '/banks/**',
       },
     ],
   },

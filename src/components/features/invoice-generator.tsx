@@ -6,7 +6,7 @@ import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Printer, FileText, Upload, ArrowLeft, Building, User, Wand2, Star, Share2, Ticket, Settings, Briefcase, CreditCard, Send, TrendingUp } from 'lucide-react';
+import { Trash2, Plus, Printer, FileText, Upload, ArrowLeft, Building, User, Wand2, Star, Share2, Ticket, Settings, Briefcase, CreditCard, Send, TrendingUp, Archive, File, BrainCircuit } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import Image from 'next/image';
 import { Separator } from '../ui/separator';
@@ -112,10 +112,12 @@ export default function InvoiceGenerator() {
   ]);
   const [taxRate, setTaxRate] = useState(10);
   const [description, setDescription] = useState('');
-  const [logo, setLogo] = useState<string | null>(PlaceHolderImages.find(p => p.id === 'logo')?.imageUrl || null);
+  const [logo, setLogo] = useState<string | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const signatureInputRef = useRef<HTMLInputElement>(null);
 
   const handlePrint = () => {
     const printContent = printRef.current;
@@ -210,13 +212,12 @@ export default function InvoiceGenerator() {
     }
   }
 
+  const isOfficial = invoiceMode === 'venus_official';
   const subtotal = useMemo(() => items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0), [items]);
   const totalDiscount = useMemo(() => items.reduce((acc, item) => acc + (item.quantity * item.discount), 0), [items]);
   const subtotalAfterDiscount = subtotal - totalDiscount;
-  const taxAmount = useMemo(() => isOfficial ? subtotalAfterDiscount * (taxRate / 100) : 0, [subtotalAfterDiscount, taxRate, invoiceMode]);
+  const taxAmount = useMemo(() => isOfficial ? subtotalAfterDiscount * (taxRate / 100) : 0, [subtotalAfterDiscount, taxRate, invoiceMode, isOfficial]);
   const grandTotal = useMemo(() => subtotalAfterDiscount + taxAmount, [subtotalAfterDiscount, taxAmount]);
-  
-  const isOfficial = invoiceMode === 'venus_official';
 
   if (invoiceMode === 'template_selector') {
     return (
@@ -385,10 +386,28 @@ export default function InvoiceGenerator() {
          </div>
      </div>
   );
+  
+  const FileInputCard = ({ title, description, onFileChange, inputRef }: { title: string, description: string, onFileChange: (e: ChangeEvent<HTMLInputElement>) => void, inputRef: React.RefObject<HTMLInputElement> }) => (
+    <div 
+        className="text-center p-6 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary transition-colors" 
+        onClick={() => inputRef.current?.click()}
+    >
+        <div className="flex justify-center items-center">
+            <Upload className="w-8 h-8 text-muted-foreground"/>
+            <div className="ml-4 text-right">
+                <h4 className="font-semibold">{title}</h4>
+                <p className="text-xs text-muted-foreground">{description}</p>
+            </div>
+        </div>
+        <input type="file" accept="image/*" onChange={onFileChange} ref={inputRef} className="hidden" />
+    </div>
+ );
+
 
   return (
     <CardContent className="space-y-6">
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-[1fr,450px] gap-8 items-start">
+            {/* Left Side: Inputs */}
             <div className="space-y-6 no-print">
                 <div className="flex justify-between items-center">
                     <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
@@ -414,12 +433,12 @@ export default function InvoiceGenerator() {
                         <AccordionTrigger><div className='flex items-center gap-2'><Briefcase className='w-5 h-5'/>اقلام فاکتور</div></AccordionTrigger>
                         <AccordionContent className="pt-4 space-y-3">
                              {items.map((item, i) => (
-                                <div key={item.id} className="grid gap-2 items-end grid-cols-[1fr,80px,110px,100px,auto]">
-                                    <Input placeholder={`شرح کالا ${i+1}`} value={item.description} onChange={e => handleItemChange(item.id, 'description', e.target.value)} />
-                                    <Input type="text" placeholder="تعداد" value={formatNumber(item.quantity)} onChange={e => handleItemChange(item.id, 'quantity', e.target.value)} className="text-center" dir="ltr"/>
-                                    <Input type="text" placeholder="قیمت واحد" value={formatNumber(item.unitPrice)} onChange={e => handleItemChange(item.id, 'unitPrice', e.target.value)} className="text-center" dir="ltr"/>
-                                    <Input type="text" placeholder="تخفیف" value={formatNumber(item.discount)} onChange={e => handleItemChange(item.id, 'discount', e.target.value)} className="text-center" dir="ltr"/>
-                                    <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="text-destructive"><Trash2 className="w-5 h-5"/></Button>
+                                <div key={item.id} className="grid gap-2 items-end grid-cols-1 sm:grid-cols-[1fr,80px,110px,100px,auto]">
+                                    <div className='sm:col-span-5'><Label className='text-xs text-muted-foreground'>شرح کالا/خدمات {i+1}</Label><Input placeholder={`شرح کالا ${i+1}`} value={item.description} onChange={e => handleItemChange(item.id, 'description', e.target.value)} /></div>
+                                    <div><Label className='text-xs text-muted-foreground'>تعداد</Label><Input type="text" placeholder="تعداد" value={formatNumber(item.quantity)} onChange={e => handleItemChange(item.id, 'quantity', e.target.value)} className="text-center" dir="ltr"/></div>
+                                    <div><Label className='text-xs text-muted-foreground'>قیمت واحد</Label><Input type="text" placeholder="قیمت واحد" value={formatNumber(item.unitPrice)} onChange={e => handleItemChange(item.id, 'unitPrice', e.target.value)} className="text-center" dir="ltr"/></div>
+                                    <div><Label className='text-xs text-muted-foreground'>تخفیف</Label><Input type="text" placeholder="تخفیف" value={formatNumber(item.discount)} onChange={e => handleItemChange(item.id, 'discount', e.target.value)} className="text-center" dir="ltr"/></div>
+                                    <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="text-destructive self-end"><Trash2 className="w-5 h-5"/></Button>
                                 </div>
                             ))}
                             <Button onClick={addItem} variant="outline" size="sm" className="mt-2"><Plus className="w-4 h-4 ml-2"/> افزودن ردیف</Button>
@@ -429,60 +448,57 @@ export default function InvoiceGenerator() {
                         <AccordionTrigger><div className='flex items-center gap-2'><Settings className='w-5 h-5'/>تنظیمات و جزئیات</div></AccordionTrigger>
                         <AccordionContent className="pt-4 space-y-4">
                              <div className={cn("grid gap-4", isOfficial ? "md:grid-cols-3" : "md:grid-cols-2")}>
-                                <Input placeholder="شماره فاکتور" value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} />
-                                <Input placeholder="تاریخ ثبت" value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} />
-                                {isOfficial && <Input placeholder="تاریخ سررسید" value={dueDate} onChange={e => setDueDate(e.target.value)} />}
+                               <div className="space-y-1"><Label>شماره فاکتور</Label><Input placeholder="شماره فاکتور" value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} /></div>
+                               <div className="space-y-1"><Label>تاریخ ثبت</Label><Input placeholder="تاریخ ثبت" value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} /></div>
+                                {isOfficial && <div className="space-y-1"><Label>تاریخ سررسید</Label><Input placeholder="تاریخ سررسید" value={dueDate} onChange={e => setDueDate(e.target.value)} /></div>}
                             </div>
                             {isOfficial && (
-                              <div className="space-y-2">
+                              <div className="space-y-1">
                                 <Label>مالیات بر ارزش افزوده (%)</Label>
                                 <Input type="number" value={taxRate} onChange={e => setTaxRate(parseFloat(e.target.value) || 0)} className="text-center"/>
                               </div>
                             )}
-                            <div className="space-y-2">
+                            <div className="space-y-1">
                                 <Label>توضیحات</Label>
                                 <Textarea placeholder="توضیحات اضافی فاکتور" value={description} onChange={e => setDescription(e.target.value)} />
                             </div>
-                             <div className="space-y-2">
-                              <Label>لوگو</Label>
-                              <Input type="file" accept="image/*" onChange={handleFileUpload(setLogo)} />
-                            </div>
-                             <div className="space-y-2">
-                              <Label>تصویر امضا</Label>
-                              <Input type="file" accept="image/*" onChange={handleFileUpload(setSignature)} />
+                             <div className="grid sm:grid-cols-2 gap-4">
+                                <FileInputCard title="لوگو" description="در صورت داشتن لوگو می توانید در این بخش وارد نمایید" onFileChange={handleFileUpload(setLogo)} inputRef={logoInputRef} />
+                                <FileInputCard title="امضای فروشنده" description="تصویر امضای فروشنده" onFileChange={handleFileUpload(setSignature)} inputRef={signatureInputRef} />
                             </div>
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>
-                <Button onClick={handlePrint} className="w-full h-12 text-lg"><Printer className="w-5 h-5 ml-2"/> چاپ فاکتور</Button>
-            </div>
-            
-            <div className='space-y-6'>
-                <div className='lg:sticky top-28'>
-                     <div ref={printRef} className='hidden print:block'>
-                       {isOfficial ? renderVenusPreview() : renderClassicPreview()}
-                    </div>
-                     <div className='hidden lg:block'>
-                       {isOfficial ? renderVenusPreview() : renderClassicPreview()}
-                    </div>
-                </div>
-
-                <div className='space-y-3 no-print'>
+                <div className='space-y-3 no-print mt-8'>
                     <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
                         <Wand2 className="w-6 h-6 text-primary" />
                         امکانات فاکتورساز
                     </h3>
                     <div className="grid sm:grid-cols-2 gap-3">
                         <FeatureCard icon={<CreditCard className="w-6 h-6"/>} title="پرداخت آنلاین فاکتور" description="اتصال به درگاه پرداخت مستقیم و واسط" />
-                        <FeatureCard icon={<TrendingUp className="w-6 h-6"/>} title="گزارش‌گیری و نمودارها" description="گزارش فروش هر کالا و خدمات" />
+                        <FeatureCard icon={<Archive className="w-6 h-6"/>} title="سوابق فاکتورها" description="مشاهده و ذخیره تمام فاکتور های قبلی" />
+                        <FeatureCard icon={<BrainCircuit className="w-6 h-6"/>} title="فرمول نویسی و محاسبه‌گر" description="محاسبه هزینه و تخفیف ‌های فاکتور" />
+                        <FeatureCard icon={<TrendingUp className="w-6 h-6"/>} title="گزارش‌گیری آماری" description="گزارش‌گیری فروش هر کالا و خدمات" />
+                        <FeatureCard icon={<File className="w-6 h-6"/>} title="طراحی قالب دلخواه" description="شخصی سازی ورودی‌های فاکتور" />
                         <FeatureCard icon={<Star className="w-6 h-6"/>} title="امضای دیجیتال" description="دریافت امضای دیجیتال فروشنده و خریدار" />
-                        <FeatureCard icon={<Ticket className="w-6 h-6"/>} title="کد تخفیف" description="تعریف کد تخفیف به صورت مبلغ یا درصد" />
                         <FeatureCard icon={<Send className="w-6 h-6"/>} title="ارسال پیامک و ایمیل" description="ارسال اطلاعات فاکتور از طریق ایمیل و پیامک" />
                         <FeatureCard icon={<Share2 className="w-6 h-6"/>} title="اشتراک‌گذاری فاکتور" description="اشتراک‌گذاری فاکتور در شبکه‌های اجتماعی" />
                     </div>
                 </div>
             </div>
+            
+            {/* Right Side: Preview */}
+            <div className='space-y-6 lg:sticky top-24'>
+                 <div ref={printRef} className='hidden print:block'>
+                   {isOfficial ? renderVenusPreview() : renderClassicPreview()}
+                </div>
+                 <div className='hidden lg:block'>
+                   {isOfficial ? renderVenusPreview() : renderClassicPreview()}
+                </div>
+                 <Button onClick={handlePrint} className="w-full h-12 text-lg no-print"><Printer className="w-5 h-5 ml-2"/> چاپ یا دریافت PDF</Button>
+            </div>
         </div>
     </CardContent>
   );
 }
+

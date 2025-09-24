@@ -1,22 +1,25 @@
+
 "use client";
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, ChangeEvent } from 'react';
 import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Printer, FileText } from 'lucide-react';
+import { Trash2, Plus, Printer, FileText, Upload, BarChart, CalendarDays } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { numToWords } from '@/lib/utils';
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Separator } from '../ui/separator';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import Barcode from 'react-barcode';
 
 type InvoiceItem = {
   id: number;
   description: string;
   quantity: number;
   unitPrice: number;
+  discount: number; // Discount per item
 };
 
 type PartyInfo = {
@@ -24,11 +27,12 @@ type PartyInfo = {
   nationalId: string;
   address: string;
   phone: string;
+  email: string;
 };
 
 const formatNumber = (num: number) => {
   if (isNaN(num)) return '';
-  return num.toLocaleString('fa-IR');
+  return num.toLocaleString('fa-IR', { useGrouping: true });
 };
 
 const parseFormattedNumber = (str: string) => {
@@ -42,35 +46,46 @@ const parseFormattedNumber = (str: string) => {
 const PartyInput = ({ title, party, setParty }: { title: string, party: PartyInfo, setParty: (value: PartyInfo) => void }) => (
     <div className="space-y-3 glass-effect p-4 rounded-xl">
       <h4 className="font-semibold text-lg text-foreground/90 border-b pb-2">{title}</h4>
-      <div className="space-y-2">
-        <Label>نام</Label>
-        <Input placeholder="نام شخص حقیقی/حقوقی" value={party.name} onChange={(e) => setParty({ ...party, name: e.target.value })} />
-      </div>
-      <div className="space-y-2">
-         <Label>کد ملی / شناسه ملی</Label>
-        <Input placeholder="کد ملی / شناسه ملی" value={party.nationalId} onChange={(e) => setParty({ ...party, nationalId: e.target.value })} />
-      </div>
-      <div className="space-y-2">
-        <Label>آدرس</Label>
-        <Input placeholder="آدرس کامل" value={party.address} onChange={(e) => setParty({ ...party, address: e.target.value })} />
-      </div>
-      <div className="space-y-2">
-        <Label>تلفن</Label>
-        <Input placeholder="شماره تماس" value={party.phone} onChange={(e) => setParty({ ...party, phone: e.target.value })} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="space-y-1">
+          <Label>نام</Label>
+          <Input placeholder="نام شخص/شرکت" value={party.name} onChange={(e) => setParty({ ...party, name: e.target.value })} />
+        </div>
+        <div className="space-y-1">
+          <Label>کد/شناسه ملی</Label>
+          <Input placeholder="کد ملی/شناسه" value={party.nationalId} onChange={(e) => setParty({ ...party, nationalId: e.target.value })} />
+        </div>
+        <div className="space-y-1 sm:col-span-2">
+          <Label>آدرس</Label>
+          <Input placeholder="آدرس کامل" value={party.address} onChange={(e) => setParty({ ...party, address: e.target.value })} />
+        </div>
+         <div className="space-y-1">
+           <Label>تلفن</Label>
+          <Input placeholder="شماره تماس" value={party.phone} onChange={(e) => setParty({ ...party, phone: e.target.value })} />
+        </div>
+        <div className="space-y-1">
+          <Label>ایمیل</Label>
+          <Input placeholder="آدرس ایمیل" type="email" value={party.email} onChange={(e) => setParty({ ...party, email: e.target.value })} />
+        </div>
       </div>
     </div>
   );
   
 export default function InvoiceGenerator() {
-  const [seller, setSeller] = useState<PartyInfo>({ name: '', nationalId: '', address: '', phone: '' });
-  const [buyer, setBuyer] = useState<PartyInfo>({ name: '', nationalId: '', address: '', phone: '' });
-  const [invoiceNumber, setInvoiceNumber] = useState('');
-  const [invoiceDate, setInvoiceDate] = useState(new Date().toLocaleDateString('fa-IR-u-nu-latn').replace(/\//g, '/'));
-  const [items, setItems] = useState<InvoiceItem[]>([{ id: 1, description: '', quantity: 1, unitPrice: 0 }]);
+  const [seller, setSeller] = useState<PartyInfo>({ name: 'نام شرکت شما', nationalId: '', address: 'آدرس شما', phone: 'تلفن شما', email: 'ایمیل شما' });
+  const [buyer, setBuyer] = useState<PartyInfo>({ name: 'مرتضی محمدی', nationalId: '', address: '', phone: '۰۹۱۲۱۲۳۴۵۶۷', email: 'morteza123@gmail.com' });
+  const [invoiceNumber, setInvoiceNumber] = useState('۱۳۹۹۰۰۰۰۱');
+  const [invoiceDate, setInvoiceDate] = useState(new Date().toLocaleDateString('fa-IR-u-nu-latn', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/'));
+  const [dueDate, setDueDate] = useState('');
+  const [items, setItems] = useState<InvoiceItem[]>([
+      { id: 1, description: 'نام کالای ۱', quantity: 1, unitPrice: 10000, discount: 1000 },
+      { id: 2, description: 'نام کالای ۲', quantity: 1, unitPrice: 20000, discount: 1000 },
+      { id: 3, description: 'نام کالای ۳', quantity: 2, unitPrice: 30000, discount: 1000 },
+  ]);
   const [taxRate, setTaxRate] = useState(9);
-  const [discount, setDiscount] = useState(0);
-
-  const logo = PlaceHolderImages.find(p => p.id === 'logo');
+  const [description, setDescription] = useState('');
+  const [logo, setLogo] = useState<string | null>(PlaceHolderImages.find(p => p.id === 'logo')?.imageUrl || null);
+  
   const printRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
@@ -82,29 +97,28 @@ export default function InvoiceGenerator() {
             printWindow.document.write('<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />');
             printWindow.document.write(`
                 <style>
-                    body { font-family: 'Vazirmatn', sans-serif; direction: rtl; padding: 20px; background-color: #fff; color: #000; }
+                    body { font-family: 'Vazirmatn', sans-serif; direction: rtl; background-color: #fff; color: #000; }
                     @page { size: A4; margin: 0; }
-                    .invoice-container { max-width: 800px; margin: auto; border: 1px solid #ddd; padding: 20px; }
+                    .invoice-print-container { max-width: 800px; margin: auto; padding: 20px; }
+                    .invoice-header-print { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #ddd; padding-bottom: 15px; }
+                    .party-info-container-print { display: flex; justify-content: space-between; gap: 20px; margin: 20px 0; font-size: 13px; }
+                    .party-info-print { width: 48%; }
+                    .party-info-print div { padding: 4px 0; }
+                    .totals-container-print { display: flex; justify-content: space-between; align-items: flex-start; font-size: 13px; margin-top: 20px;}
+                    .calc-section-print { width: 320px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+                    .calc-section-print > div { display: flex; justify-content: space-between; padding: 8px; }
+                    .calc-section-print > div:not(:last-child) { border-bottom: 1px solid #ddd; }
+                    .grand-total-print { font-weight: bold; font-size: 14px; background-color: #eee; }
                     table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
                     th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
                     th { background-color: #f2f2f2; }
-                    .invoice-header, .party-info-container, .totals-container { margin-bottom: 20px; }
-                    .invoice-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 10px;}
-                    .party-info-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-                    .party-info { border: 1px solid #ddd; padding: 10px; border-radius: 5px; font-size: 11px; }
-                    .party-info h3 { font-size: 13px; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 10px; }
-                    .totals-container { display: flex; justify-content: space-between; align-items: flex-start; }
-                    .words-section { flex: 1; }
-                    .calc-section { width: 350px; border: 1px solid #ddd; padding: 10px; border-radius: 5px; font-size: 12px; }
-                    .calc-section > div { display: flex; justify-content: space-between; padding: 5px 0; }
-                    .calc-section > div:not(:last-child) { border-bottom: 1px dashed #eee; }
-                    .grand-total { font-weight: bold; font-size: 14px; }
-                    .signatures { margin-top: 50px; display: flex; justify-content: space-around; font-size: 12px; }
+                    .signatures-print { margin-top: 60px; display: flex; justify-content: space-around; font-size: 13px; }
                     .no-print { display: none !important; }
+                    .font-mono { font-family: monospace; }
                 </style>
             `);
-            printWindow.document.write('</head><body><div class="invoice-container">');
-            printWindow.document.write(printContent.innerHTML);
+            printWindow.document.write('</head><body><div class="invoice-print-container">');
+            printWindow.document.write(printContent.innerHTML.replace(/<canvas/g, '<img src="' + (printContent.querySelector('canvas')?.toDataURL() || '') + '" style="height: 50px;"'));
             printWindow.document.write('</div></body></html>');
             printWindow.document.close();
             printWindow.focus();
@@ -117,7 +131,7 @@ export default function InvoiceGenerator() {
   };
 
   const addItem = () => {
-    setItems([...items, { id: Date.now(), description: '', quantity: 1, unitPrice: 0 }]);
+    setItems([...items, { id: Date.now(), description: '', quantity: 1, unitPrice: 0, discount: 0 }]);
   };
 
   const removeItem = (id: number) => {
@@ -127,19 +141,30 @@ export default function InvoiceGenerator() {
   const handleItemChange = (id: number, field: keyof Omit<InvoiceItem, 'id'>, value: string) => {
     const newItems = items.map(item => {
       if (item.id === id) {
-        if (field === 'description') {
-          return { ...item, [field]: value };
-        }
+        if (field === 'description') return { ...item, [field]: value };
         return { ...item, [field]: parseFormattedNumber(value) };
       }
       return item;
     });
     setItems(newItems);
   };
+  
+  const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            setLogo(event.target?.result as string);
+        }
+        reader.readAsDataURL(file);
+    }
+  }
 
   const subtotal = useMemo(() => items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0), [items]);
-  const taxAmount = useMemo(() => (subtotal - discount) * (taxRate / 100), [subtotal, discount, taxRate]);
-  const grandTotal = useMemo(() => (subtotal - discount) + taxAmount, [subtotal, discount, taxAmount]);
+  const totalDiscount = useMemo(() => items.reduce((acc, item) => acc + (item.quantity * item.discount), 0), [items]);
+  const subtotalAfterDiscount = subtotal - totalDiscount;
+  const taxAmount = useMemo(() => subtotalAfterDiscount * (taxRate / 100), [subtotalAfterDiscount, taxRate]);
+  const grandTotal = useMemo(() => subtotalAfterDiscount + taxAmount, [subtotalAfterDiscount, taxAmount]);
   const grandTotalInWords = useMemo(() => numToWords(String(Math.floor(grandTotal))), [grandTotal]);
 
   return (
@@ -151,7 +176,7 @@ export default function InvoiceGenerator() {
                     <FileText className="w-6 h-6 text-primary" />
                     اطلاعات فاکتور
                 </h3>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-1 gap-4">
                     <PartyInput title="فروشنده" party={seller} setParty={setSeller} />
                     <PartyInput title="خریدار" party={buyer} setParty={setBuyer} />
                 </div>
@@ -162,11 +187,12 @@ export default function InvoiceGenerator() {
 
                 <div className="space-y-3 glass-effect p-4 rounded-xl">
                     <h4 className="font-semibold text-lg text-foreground/90">ردیف‌های فاکتور</h4>
-                    {items.map((item, index) => (
-                        <div key={item.id} className="grid grid-cols-[1fr,90px,140px,auto] gap-2 items-center">
-                            <Input placeholder={`شرح کالا/خدمات`} value={item.description} onChange={e => handleItemChange(item.id, 'description', e.target.value)} />
+                    {items.map((item) => (
+                        <div key={item.id} className="grid grid-cols-[1fr,90px,120px,110px,auto] gap-2 items-center">
+                            <Input placeholder={`شرح کالا`} value={item.description} onChange={e => handleItemChange(item.id, 'description', e.target.value)} />
                             <Input type="text" placeholder="تعداد" value={formatNumber(item.quantity)} onChange={e => handleItemChange(item.id, 'quantity', e.target.value)} className="text-center" dir="ltr"/>
-                            <Input type="text" placeholder="مبلغ واحد (ریال)" value={formatNumber(item.unitPrice)} onChange={e => handleItemChange(item.id, 'unitPrice', e.target.value)} className="text-center" dir="ltr"/>
+                            <Input type="text" placeholder="قیمت واحد" value={formatNumber(item.unitPrice)} onChange={e => handleItemChange(item.id, 'unitPrice', e.target.value)} className="text-center" dir="ltr"/>
+                            <Input type="text" placeholder="تخفیف" value={formatNumber(item.discount)} onChange={e => handleItemChange(item.id, 'discount', e.target.value)} className="text-center" dir="ltr"/>
                             <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="text-destructive"><Trash2 className="w-5 h-5"/></Button>
                         </div>
                     ))}
@@ -175,12 +201,12 @@ export default function InvoiceGenerator() {
 
                  <div className="grid md:grid-cols-2 gap-4">
                      <div className="space-y-2">
-                        <Label>تخفیف (ریال)</Label>
-                        <Input type="text" value={formatNumber(discount)} onChange={e => setDiscount(parseFormattedNumber(e.target.value))} className="text-center" dir="ltr"/>
-                     </div>
-                     <div className="space-y-2">
                         <Label>مالیات بر ارزش افزوده (%)</Label>
-                        <Input type="number" value={taxRate} onChange={e => setTaxRate(parseFloat(e.target.value))} className="text-center"/>
+                        <Input type="number" value={taxRate} onChange={e => setTaxRate(parseFloat(e.target.value) || 0)} className="text-center"/>
+                     </div>
+                      <div className="space-y-2">
+                        <Label>لوگو</Label>
+                        <Input type="file" accept="image/*" onChange={handleLogoUpload} />
                      </div>
                 </div>
 
@@ -188,95 +214,85 @@ export default function InvoiceGenerator() {
             </div>
             
              {/* Printable Area */}
-            <div ref={printRef} className='space-y-4 bg-white text-black p-6 rounded-2xl shadow-lg border'>
+            <div ref={printRef} className='space-y-4 bg-white text-black p-6 rounded-2xl shadow-lg border -z-10 relative'>
                 {/* Header */}
-                <div className="invoice-header">
-                    <div className="flex flex-col items-center gap-2">
-                        {logo && <Image src={logo.imageUrl} alt="Logo" width={60} height={60} />}
-                        <h2 className="text-lg font-bold">{seller.name || 'نام فروشنده'}</h2>
+                <div className="invoice-header-print">
+                    <div className="text-right space-y-1">
+                        <h1 className="text-2xl font-bold">فاکتور فروش</h1>
+                        <p className="font-semibold">{seller.name || 'نام شرکت'}</p>
                     </div>
-                    <div className='text-center'>
-                         <h1 className="text-2xl font-bold">صورتحساب فروش کالا و خدمات</h1>
+                    <div className="flex flex-col items-center gap-2">
+                        {logo ? <Image src={logo} alt="Logo" width={80} height={80} className='object-contain' /> : 
+                        <div className="w-20 h-20 border-2 border-dashed flex flex-col items-center justify-center text-gray-500 text-xs"><FileText className="w-6 h-6 mb-1"/><span>لوگوی شما</span></div>}
                     </div>
                     <div className="text-left space-y-1 text-sm">
-                        <p><strong>شماره:</strong> {invoiceNumber || '---'}</p>
-                        <p><strong>تاریخ:</strong> {invoiceDate || '---'}</p>
+                        <div><strong className='ml-2'>تاریخ ثبت:</strong>{invoiceDate || '---'}</div>
+                        <div><strong className='ml-2'>تاریخ سررسید:</strong>{dueDate || '---'}</div>
+                        <div className='flex items-center justify-end'><strong className='ml-2'>شماره:</strong> <span className='font-mono'>{invoiceNumber || '---'}</span></div>
+                        {invoiceNumber && <div className='pt-1'><Barcode value={invoiceNumber} height={30} width={1.5} displayValue={false} /></div>}
                     </div>
                 </div>
 
                 {/* Seller & Buyer Info */}
-                <div className="party-info-container">
-                    <div className="party-info">
-                        <h3 className="font-bold">اطلاعات فروشنده</h3>
-                        <p><strong>نام:</strong> {seller.name || '---'}</p>
-                        <p><strong>کد/شناسه ملی:</strong> {seller.nationalId || '---'}</p>
-                        <p><strong>آدرس:</strong> {seller.address || '---'}</p>
-                        <p><strong>تلفن:</strong> {seller.phone || '---'}</p>
-                    </div>
-                    <div className="party-info">
-                        <h3 className="font-bold">اطلاعات خریدار</h3>
-                        <p><strong>نام:</strong> {buyer.name || '---'}</p>
-                        <p><strong>کد/شناسه ملی:</strong> {buyer.nationalId || '---'}</p>
-                        <p><strong>آدرس:</strong> {buyer.address || '---'}</p>
-                        <p><strong>تلفن:</strong> {buyer.phone || '---'}</p>
+                <div className="party-info-container-print border-y py-3">
+                    <div className="party-info-print">
+                        <p><strong>خریدار:</strong> {buyer.name || '---'}</p>
+                        <p><strong>موبایل:</strong> {buyer.phone || '---'}</p>
+                        <p><strong>ایمیل:</strong> {buyer.email || '---'}</p>
                     </div>
                 </div>
 
                 {/* Items Table */}
-                <Table>
+                <Table className='text-xs'>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[50px]">ردیف</TableHead>
+                            <TableHead className="w-[40px]">ردیف</TableHead>
                             <TableHead>شرح کالا / خدمات</TableHead>
                             <TableHead className="text-center">تعداد</TableHead>
-                            <TableHead className="text-center">مبلغ واحد (ریال)</TableHead>
-                            <TableHead className="text-center">مبلغ کل (ریال)</TableHead>
+                            <TableHead className="text-center">قیمت واحد (تومان)</TableHead>
+                            <TableHead className="text-center">تخفیف (تومان)</TableHead>
+                            <TableHead className="text-center">جمع بدون تخفیف (تومان)</TableHead>
+                            <TableHead className="text-center">جمع کل (تومان)</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {items.map((item, index) => {
-                            const total = item.quantity * item.unitPrice;
+                            const totalWithoutDiscount = item.quantity * item.unitPrice;
+                            const total = totalWithoutDiscount - (item.quantity * item.discount);
                             return (
                                 <TableRow key={item.id}>
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>{item.description}</TableCell>
-                                    <TableCell className="text-center">{formatNumber(item.quantity)}</TableCell>
-                                    <TableCell className="text-center">{formatNumber(item.unitPrice)}</TableCell>
-                                    <TableCell className="text-center">{formatNumber(total)}</TableCell>
+                                    <TableCell className="text-center font-mono">{formatNumber(item.quantity)}</TableCell>
+                                    <TableCell className="text-center font-mono">{formatNumber(item.unitPrice)}</TableCell>
+                                    <TableCell className="text-center font-mono text-red-600">{formatNumber(item.discount)}</TableCell>
+                                    <TableCell className="text-center font-mono">{formatNumber(totalWithoutDiscount)}</TableCell>
+                                    <TableCell className="text-center font-mono font-semibold">{formatNumber(total)}</TableCell>
                                 </TableRow>
                             );
                         })}
                     </TableBody>
                 </Table>
                 
-                 <div className="totals-container mt-4">
-                    <div className="words-section">
-                        <p><strong>مبلغ به حروف: </strong> {grandTotalInWords} ریال</p>
+                 <div className="totals-container-print mt-4">
+                    <div className="words-section flex-1">
+                        <p><strong>مکان قرارگیری متن:</strong> {description || '---'}</p>
+                        <div className="signatures-print">
+                            <div><p>امضای فروشنده</p><div className="h-16 w-32 border-t mt-2"></div></div>
+                            <div><p>امضای خریدار</p><div className="h-16 w-32 border-t mt-2"></div></div>
+                        </div>
                     </div>
-                     <div className="calc-section">
-                        <div><span>جمع کل:</span><span className="font-mono">{formatNumber(subtotal)} ریال</span></div>
-                        <div><span>تخفیف:</span><span className="font-mono">{formatNumber(discount)} ریال</span></div>
-                        <div className='font-bold'><span>جمع پس از تخفیف:</span><span className="font-mono">{formatNumber(subtotal - discount)} ریال</span></div>
-                        <div><span>مالیات بر ارزش افزوده ({formatNumber(taxRate)}٪):</span><span className="font-mono">{formatNumber(taxAmount)} ریال</span></div>
-                        <div className="grand-total"><span>مبلغ نهایی قابل پرداخت:</span><span className="font-mono">{formatNumber(grandTotal)} ریال</span></div>
+                     <div className="calc-section-print">
+                        <div><span>مجموع:</span><span className="font-mono">{formatNumber(subtotal)} تومان</span></div>
+                        <div><span>تخفیف:</span><span className="font-mono">{formatNumber(totalDiscount)} تومان</span></div>
+                        <div><span>ارزش افزوده ({formatNumber(taxRate)}٪):</span><span className="font-mono">{formatNumber(taxAmount)} تومان</span></div>
+                        <div className="grand-total-print"><span>مبلغ نهایی:</span><span className="font-mono">{formatNumber(grandTotal)} تومان</span></div>
                     </div>
                 </div>
 
-                <div className="signatures">
-                    <div>
-                        <p>مهر و امضای فروشنده</p>
-                        <div className="h-20 w-32 border mt-2"></div>
-                    </div>
-                    <div>
-                        <p>مهر و امضای خریدار</p>
-                        <div className="h-20 w-32 border mt-2"></div>
-                    </div>
-                </div>
             </div>
         </div>
         
     </CardContent>
   );
 }
-
-    

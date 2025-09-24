@@ -157,6 +157,17 @@
     box-shadow: 0 0 12px hsl(var(--primary) / 0.6), 0 0 24px hsl(var(--accent) / 0.6);
   }
 
+  .day-holiday {
+      color: hsl(var(--destructive));
+  }
+  .day-holiday:hover {
+      color: hsl(var(--destructive));
+  }
+  .day-holiday.rdp-day_selected {
+      background-color: hsl(var(--destructive)) !important;
+      color: hsl(var(--destructive-foreground)) !important;
+  }
+
 
   @keyframes gradientShift {
       0%, 100% { opacity: 1; }

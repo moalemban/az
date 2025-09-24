@@ -12,8 +12,10 @@ import { ScrollArea } from '../ui/scroll-area';
 import { CalendarCheck, Info, Moon, Sun, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '../ui/button';
 import 'react-day-picker/dist/style.css';
+import { cn } from '@/lib/utils';
+import { DayPicker, DayContentProps } from 'react-day-picker';
 
-type CalendarSystem = 'shamsi' | 'gregorian' | 'hijri';
+type CalendarSystem = 'shamsi' | 'gregorian';
 
 export default function EventsCalendar() {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -78,16 +80,19 @@ export default function EventsCalendar() {
       setDate(newDate);
     }
   };
-
-  const DayContent: React.FC<React.ComponentProps<typeof Calendar>['components']['DayContent']> = (props) => {
+  
+  const DayContentWithEvents: React.FC<DayContentProps> = (props) => {
       const isHoliday = eventDays.isHoliday.some(d => d.getTime() === props.date.getTime());
       const hasEvent = eventDays.hasEvent.some(d => d.getTime() === props.date.getTime());
       const numberFormatter = new Intl.NumberFormat(calendarSystem === 'shamsi' ? 'fa-IR' : 'en-US', {useGrouping: false});
-
+      
       return (
-          <div className='relative'>
-              {numberFormatter.format(props.date.getDate())}
-              {hasEvent && <span className={`absolute bottom-0 right-1/2 translate-x-1/2 w-1.5 h-1.5 rounded-full ${isHoliday ? 'bg-red-500' : 'bg-primary'}`}/>}
+          <div className='relative w-full h-full flex items-center justify-center'>
+              <span>{numberFormatter.format(props.date.getDate())}</span>
+              {hasEvent && <span className={cn(
+                  "absolute bottom-1 w-1.5 h-1.5 rounded-full",
+                   isHoliday ? 'bg-red-500' : 'bg-primary'
+              )}/>}
           </div>
       )
   }
@@ -98,7 +103,6 @@ export default function EventsCalendar() {
             <div className="flex items-center justify-center p-1 bg-muted rounded-lg w-full">
                 <Button onClick={() => setCalendarSystem('shamsi')} variant={calendarSystem === 'shamsi' ? 'default' : 'ghost'} className="flex-1 gap-2"><Sun className="w-4 h-4"/> شمسی</Button>
                 <Button onClick={() => setCalendarSystem('gregorian')} variant={calendarSystem === 'gregorian' ? 'default' : 'ghost'} className="flex-1 gap-2"><CalendarIcon className="w-4 h-4"/> میلادی</Button>
-                <Button variant='ghost' className="flex-1 gap-2 text-muted-foreground/50" disabled><Moon className="w-4 h-4"/> قمری</Button>
             </div>
             <Calendar
                 mode="single"
@@ -107,11 +111,15 @@ export default function EventsCalendar() {
                 className="rounded-md border glass-effect"
                 dir={calendarSystem === 'shamsi' ? 'rtl' : 'ltr'}
                 locale={calendarSystem === 'shamsi' ? faIR : enUS}
-                modifiers={eventDays}
-                modifiersClassNames={{
-                    isHoliday: 'text-red-500',
+                modifiers={{
+                    ...eventDays,
+                    friday: { dayOfWeek: [5] } // In date-fns, Friday is 5 (if week starts on Sunday)
                 }}
-                components={{ DayContent }}
+                modifiersClassNames={{
+                    isHoliday: 'day-holiday',
+                    friday: 'day-holiday',
+                }}
+                components={{ DayContent: DayContentWithEvents }}
                 captionLayout="dropdown-buttons"
                 fromYear={1970}
                 toYear={new Date().getFullYear() + 2}
